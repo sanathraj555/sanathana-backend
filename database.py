@@ -6,10 +6,10 @@ def get_db_connection():
         cert_path = os.path.abspath("DigiCertGlobalRootG2.crt.pem")  # ✅ Full absolute path to SSL cert
 
         conn = mysql.connector.connect(
-            host="sanathanasql.mysql.database.azure.com",   # ✅ Corrected host name
-            user="sanathanatechlabs@sanathanasql",           # ✅ Corrected user (user@newserver)
-            password="Techlabs!123",                         # ✅ Same password if unchanged
-            database="sanathana_chatbot",
+            host="sanathanamysql.mysql.database.azure.com",   # ✅ Corrected host name
+            user="techlabs@sanathanamysql",           # ✅ Corrected user (user@newserver)
+            password="techlabs@123",                         # ✅ Same password if unchanged
+            database="sanathana_chatbot_db",
             ssl_ca=cert_path,
             ssl_verify_cert=True,
             auth_plugin="mysql_native_password",
