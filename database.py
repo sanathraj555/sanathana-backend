@@ -10,11 +10,8 @@ def get_db_connection():
             user="techlabs@sanathanamysql",           # ✅ Corrected user (user@newserver)
             password="techlabs@123",                         # ✅ Same password if unchanged
             database="sanathana_chatbot_db",
-            ssl_ca=cert_path,
-            ssl_verify_cert=True,
-            auth_plugin="mysql_native_password",
-            pool_name="azurepool",
-            pool_reset_session=True
+            ssl_disabled=True
+            
         )
 
         cursor = conn.cursor()
