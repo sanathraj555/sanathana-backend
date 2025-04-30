@@ -61,9 +61,8 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          credentials: ${{ secrets.AZURE_CREDENTIALS }}   # Use the service principal credentials from GitHub secrets
+
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
