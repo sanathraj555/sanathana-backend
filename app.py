@@ -21,7 +21,7 @@ app.config["MONGO_URI"] = cosmos_uri
 try:
     mongo = PyMongo(app)
     mongo.cx.admin.command('ping')  # Ping Cosmos DB
-    print("✅ Connected to Azure Cosmos DB (MongoDB API)!")
+    print("✅ Connected to Azure Cosmos DB (MongoDB API)!")  # Ensure DB connection is successful
 except Exception as e:
     print(f"❌ Cosmos DB Connection Failed: {e}")
     mongo = None
@@ -53,4 +53,4 @@ def serve_react_app(path):
 # ✅ Run Flask Server
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # Dynamic port for Azure
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=False)  # Don't run in debug mode in production
