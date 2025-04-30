@@ -71,7 +71,4 @@ jobs:
         with:
           app-name: 'sanathana-backend'
           slot-name: 'Production'
-<<<<<<< HEAD
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}  # Use the publish profile secret
-=======
->>>>>>> 2546b34409462020d84af2d56d3a10590826137d
