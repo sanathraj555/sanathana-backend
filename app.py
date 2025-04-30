@@ -14,6 +14,7 @@ CORS(app, resources={r"/*": {"origins": ["https://yellow-hill-0dae7d700.6.azures
 # ✅ Azure Cosmos DB URI (MongoDB API)
 cosmos_uri = "mongodb+srv://sars:Sanathana123@sanathanadb.mongo.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
 
+
 # ✅ Configure MongoDB in Flask
 app.config["MONGO_URI"] = cosmos_uri
 
