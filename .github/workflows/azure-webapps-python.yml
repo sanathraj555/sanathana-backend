@@ -23,7 +23,6 @@ jobs:
         uses: actions/setup-python@v4  # Use the latest stable version of setup-python
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          # Removed cache for now to troubleshoot
 
       - name: Create and start virtual environment
         run: |
@@ -37,9 +36,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: |
-            .  # Upload the entire directory except for the virtual environment
-            !venv/
+          path: .  # Ensure that you are uploading the correct files and directories
+          # Exclude the venv directory if it's large, but ensure that your app files are included
 
   deploy:
     permissions:
@@ -54,8 +52,8 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: python-app
-          path: .
+          name: python-app  # Ensure this matches the name used in the build job's upload step
+          path: .  # Ensure this path is correct
 
       - name: Login to Azure
         uses: azure/login@v2
