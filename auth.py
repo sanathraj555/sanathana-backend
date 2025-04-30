@@ -1,9 +1,16 @@
 from flask import Blueprint, request, jsonify
 import mysql.connector
 import bcrypt
+import logging
 from database import get_db_connection
+from werkzeug.security import generate_password_hash, check_password_hash
+
+# Setup logging
+logging.basicConfig(level=logging.DEBUG)  # Configure logging for production
 
 auth_bp = Blueprint("auth", __name__)
+
+# Rate limiting can be added here
 
 @auth_bp.route("/verify-empid", methods=["POST"])
 def verify_empid():
@@ -23,6 +30,9 @@ def verify_empid():
             return jsonify({"valid": True}), 200
         else:
             return jsonify({"valid": False}), 200
+    except mysql.connector.Error as err:
+        logging.error(f"Database error: {err}")
+        return jsonify({"error": "Database error"}), 500
     finally:
         cursor.close()
         conn.close()
@@ -59,20 +69,20 @@ def signup():
         if not password:
             return jsonify({"error": "Missing password"}), 400
 
-        hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+        hashed_password = generate_password_hash(password, method='sha256')  # Use werkzeug's password hashing
         cursor.execute("INSERT INTO users (user_id, password) VALUES (%s, %s)", (user_id, hashed_password))
         conn.commit()
 
         return jsonify({"message": "Signup successful!"}), 201
 
     except mysql.connector.Error as err:
+        logging.error(f"Database error: {err}")
         return jsonify({"error": f"Database error: {err}"}), 500
-
     finally:
         cursor.close()
         conn.close()
 
-        
+
 @auth_bp.route("/login", methods=["POST"])
 def login():
     """Handles User Login"""
@@ -91,20 +101,19 @@ def login():
         cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
         user = cursor.fetchone()
 
-        print(f"🔍 DEBUG: User found in DB → {user}")  # Debugging print
-
         if not user:
             return jsonify({"error": "User not found"}), 404  # User doesn't exist
 
         stored_password = user["password"]
 
-        # Verify password
-        if not bcrypt.checkpw(password.encode("utf-8"), stored_password.encode("utf-8")):
+        # Verify password using werkzeug's check_password_hash
+        if not check_password_hash(stored_password, password):
             return jsonify({"error": "Invalid password"}), 401  # Wrong password
 
         return jsonify({"message": "Login successful!"}), 200
 
     except mysql.connector.Error as err:
+        logging.error(f"Database error: {err}")
         return jsonify({"error": f"Database error: {err}"}), 500
 
     finally:

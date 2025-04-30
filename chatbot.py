@@ -6,20 +6,26 @@ import os
 chatbot_bp = Blueprint("chatbot", __name__, url_prefix="/chatbot")
 
 # ✅ Logging configuration
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# ✅ Helper function to handle MongoDB connection and error handling
+def get_mongo_chatbot():
+    mongo_chatbot = current_app.mongo_chatbot
+    if mongo_chatbot is None:
+        logging.error("❌ Database connection issue")
+        raise Exception("Database connection issue")
+    return mongo_chatbot
 
 # ✅ Fetch Main Sections (Displayed inside chatbot messages)
 @chatbot_bp.route("/sections", methods=["GET"])
 def get_sections():
     """Fetch all main sections available in the chatbot."""
-    mongo_chatbot = current_app.mongo_chatbot
-    if mongo_chatbot is None:
-        return jsonify({"error": "Database connection issue"}), 500
-
     try:
+        mongo_chatbot = get_mongo_chatbot()
         sections_collection = mongo_chatbot["sections"]
         sections = sections_collection.find({}, {"_id": 0, "section_name": 1})
-        return jsonify({"sections": [s["section_name"] for s in sections]})
+        sections_list = [s["section_name"] for s in sections]
+        return jsonify({"sections": sections_list}), 200
     except Exception as e:
         logging.error(f"❌ Error fetching sections: {str(e)}")
         return jsonify({"error": "Failed to fetch sections"}), 500
@@ -28,24 +34,22 @@ def get_sections():
 @chatbot_bp.route("/section-questions", methods=["GET"])
 def get_section_questions():
     """Fetch sub-sections or questions for a selected section or sub-section."""
-    mongo_chatbot = current_app.mongo_chatbot
-    if mongo_chatbot is None:
-        return jsonify({"error": "Database connection issue"}), 500
-
-    sections_collection = mongo_chatbot["sections"]
-
     section_name = request.args.get("section", "").strip()
     if not section_name:
         return jsonify({"error": "Section name is required"}), 400
 
     try:
+        mongo_chatbot = get_mongo_chatbot()
+        sections_collection = mongo_chatbot["sections"]
+
+        # ✅ First, search for the main section
         section = sections_collection.find_one({"section_name": section_name})
 
         # ✅ If section found, check for sub-sections or questions
         if section:
             if "sub_sections" in section and section["sub_sections"]:
-                return jsonify({"sub_sections": [s["sub_section_name"] for s in section["sub_sections"]]})
-            return jsonify({"questions": section.get("questions", [])})
+                return jsonify({"sub_sections": [s["sub_section_name"] for s in section["sub_sections"]]}), 200
+            return jsonify({"questions": section.get("questions", [])}), 200
 
         # ✅ If section is not found, search for sub-sections within any section
         parent_section = sections_collection.find_one({"sub_sections.sub_section_name": section_name})
@@ -55,9 +59,9 @@ def get_section_questions():
                     return jsonify({
                         "sub_sections": [s["sub_section_name"] for s in sub.get("sub_sections", [])],
                         "questions": sub.get("questions", [])
-                    })
+                    }), 200
 
-        # ✅ Search deeper inside nested sub-sections
+        # ✅ Search deeper inside nested sub-sections using a helper function
         def find_sub_section(sub_sections, name):
             for sub in sub_sections:
                 if sub["sub_section_name"] == name:
@@ -76,7 +80,7 @@ def get_section_questions():
                     return jsonify({
                         "sub_sections": [s["sub_section_name"] for s in found_sub_section.get("sub_sections", [])],
                         "questions": found_sub_section.get("questions", [])
-                    })
+                    }), 200
 
         return jsonify({"error": "Section not found"}), 404
 
@@ -88,12 +92,6 @@ def get_section_questions():
 @chatbot_bp.route("/chat-response", methods=["POST"])
 def chatbot_reply():
     """Fetch the correct answer for a user question based on section context."""
-    mongo_chatbot = current_app.mongo_chatbot
-    if mongo_chatbot is None:
-        return jsonify({"error": "Database connection issue"}), 500
-
-    sections_collection = mongo_chatbot["sections"]
-
     data = request.json
     if not data or "message" not in data or "section" not in data:
         return jsonify({"error": "Invalid request. 'message' and 'section' are required."}), 400
@@ -102,12 +100,15 @@ def chatbot_reply():
     selected_section = data["section"].strip()
 
     try:
+        mongo_chatbot = get_mongo_chatbot()
+        sections_collection = mongo_chatbot["sections"]
+
         # 🔍 1. Check if it's a main section
         section = sections_collection.find_one({"section_name": selected_section})
         if section and "questions" in section:
             for q in section["questions"]:
                 if q["question"].strip().lower() == user_input.lower():
-                    return jsonify({"response": q["answer"]})
+                    return jsonify({"response": q["answer"]}), 200
 
         # 🔍 2. Check inside sub-sections
         if section and "sub_sections" in section:
@@ -115,7 +116,7 @@ def chatbot_reply():
                 if sub["sub_section_name"] == selected_section or selected_section == sub["sub_section_name"]:
                     for q in sub.get("questions", []):
                         if q["question"].strip().lower() == user_input.lower():
-                            return jsonify({"response": q["answer"]})
+                            return jsonify({"response": q["answer"]}), 200
 
         # 🔍 3. Search nested sub-sections recursively
         def search_nested_sub_sections(sub_sections):
@@ -123,7 +124,7 @@ def chatbot_reply():
                 if sub["sub_section_name"] == selected_section:
                     for q in sub.get("questions", []):
                         if q["question"].strip().lower() == user_input.lower():
-                            return jsonify({"response": q["answer"]})
+                            return jsonify({"response": q["answer"]}), 200
                 if "sub_sections" in sub:
                     result = search_nested_sub_sections(sub["sub_sections"])
                     if result:
@@ -134,7 +135,7 @@ def chatbot_reply():
         if result:
             return result
 
-        return jsonify({"response": "Sorry, I don't have an answer for that."})
+        return jsonify({"response": "Sorry, I don't have an answer for that."}), 200
 
     except Exception as e:
         logging.error(f"❌ Error fetching response: {str(e)}")
