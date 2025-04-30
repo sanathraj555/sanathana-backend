@@ -61,9 +61,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}   # Use the secret for Client ID
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}   # Use the secret for Tenant ID
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}   # Use the secret for Subscription ID
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
@@ -71,4 +71,4 @@ jobs:
         with:
           app-name: 'sanathana-backend'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}  # Use the publish profile secret
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }} # Use the publish profile secret
