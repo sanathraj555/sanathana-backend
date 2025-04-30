@@ -13,29 +13,31 @@ jobs:
       contents: read
 
     steps:
-      - name: ⬇️ Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: 🐍 Set up Python 3.10
+      - name: Set up Python version
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: 📦 Install dependencies
+      - name: Create and start virtual environment
         run: |
           python -m venv venv
           source venv/bin/activate
-          pip install -r requirements.txt
 
-      - name: 📁 Zip source (skip venv, .git, node_modules)
-        run: |
-          zip -r release.zip . -x "venv/*" ".git/*" "frontend/*"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
-      - name: ☁️ Upload zip artifact
+      - name: Zip artifact for deployment
+        run: zip release.zip ./* -r
+
+      - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: release.zip
+          path: |
+            release.zip
+            !venv/
 
   deploy:
     runs-on: ubuntu-latest
@@ -48,21 +50,24 @@ jobs:
       contents: read
 
     steps:
-      - name: 📦 Download build artifact
+      - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: python-app
 
-      - name: 🔓 Login to Azure (Client ID / Tenant ID way)
+      - name: Unzip artifact for deployment
+        run: unzip release.zip
+
+      - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}   # Use the secret for Client ID
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}   # Use the secret for Tenant ID
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}   # Use the secret for Subscription ID
 
-      - name: 🚀 Deploy to Azure Web App
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'sanathana-backend'
-          package: release.zip
+          slot-name: 'Production'
