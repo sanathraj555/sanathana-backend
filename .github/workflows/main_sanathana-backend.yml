@@ -59,13 +59,13 @@ jobs:
         run: unzip release.zip
 
       - name: Login to Azure
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           credentials: ${{ secrets.AZURE_CREDENTIALS }}   # Use the service principal credentials from GitHub secrets
 
 
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
+        uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'sanathana-backend'
