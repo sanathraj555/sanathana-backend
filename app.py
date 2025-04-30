@@ -9,7 +9,7 @@ import os
 app = Flask(__name__, static_folder='frontend/build', static_url_path='')
 
 # ✅ Allow CORS for frontend requests
-CORS(app, resources={r"/*": {"origins": ["https://sanathanachatbot-hpf3ehadd7fnerd5.canadacentral-01.azurewebsites.net"]}}, supports_credentials=True)
+CORS(app, resources={r"/*": {"origins": ["https://sanathana-backend-bzbtdafcchg7gefb.centralus-01.azurewebsites.net/"]}}, supports_credentials=True)
 
 # ✅ Azure Cosmos DB URI (MongoDB API)
 cosmos_uri = "mongodb+srv://sars:Sanathana123@sanathanadb.mongo.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
