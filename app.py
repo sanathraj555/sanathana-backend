@@ -23,7 +23,7 @@ CORS(app, resources={
 # ✅ Cosmos MongoDB Connection (vCore or API for MongoDB)
 cosmos_uri = os.getenv(
     'MONGO_URI',
-    'mongodb+srv://sars:Sanathana123@sanathanadb.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000'
+    'mongodb://sanathana-mongodb:m1ErbvRoj8vA4M3tD56mvNTEch5tasOIP0mrvfxBtqiTZYNdEVz172UeCa5qK1YI5J8xZSItPwYNACDbmUcvzw==@sanathana-mongodb.mongo.cosmos.azure.com:10255/?ssl=true&retrywrites=false&replicaSet=globaldb&maxIdleTimeMS=120000&appName=@sanathana-mongodb@'
 )
 
 # ✅ Flask config for PyMongo
