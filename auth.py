@@ -14,7 +14,7 @@ auth_bp = Blueprint("auth", __name__)
 # ======================
 @auth_bp.route("/verify-empid", methods=["POST"])
 def verify_empid():
-    data = request.get_json(silent=True)
+    data = request.get_json(force=True,silent=True)
     if not data:
         return jsonify({"error": "Missing JSON body"}), 400
 
@@ -40,7 +40,7 @@ def verify_empid():
 # ======================
 @auth_bp.route("/signup", methods=["POST"])
 def signup():
-    data = request.get_json(silent=True)
+    data = request.get_json(force=True,silent=True)
     if not data:
         return jsonify({"error": "Missing JSON body"}), 400
 
@@ -85,7 +85,7 @@ def signup():
 # ======================
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    data = request.get_json(silent=True)
+    data = request.get_json(force=True,silent=True)
     if not data:
         return jsonify({"error": "Missing JSON body"}), 400
 
