@@ -14,7 +14,10 @@ auth_bp = Blueprint("auth", __name__)
 # ======================
 @auth_bp.route("/verify-empid", methods=["POST"])
 def verify_empid():
-    data = request.get_json(force=True,silent=True)
+    print("✅ Route /auth/verify-empid HIT")  # <--- key debug log
+    data = request.get_json(force=True, silent=True)
+    print("📥 Payload:", data)
+
     if not data:
         return jsonify({"error": "Missing JSON body"}), 400
 
@@ -22,19 +25,22 @@ def verify_empid():
     if not user_id:
         return jsonify({"error": "Missing EMP ID"}), 400
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT COUNT(*) AS emp_exists FROM employee_details WHERE emp_id = %s", (user_id,))
         emp_check = cursor.fetchone()
+        print("🔎 DB Result:", emp_check)
+
         return jsonify({"valid": emp_check["emp_exists"] == 1}), 200
     except mysql.connector.Error as err:
-        logging.error(f"Database error: {err}")
+        logging.error(f"❌ Database error: {err}")
         return jsonify({"error": "Database error"}), 500
     finally:
         cursor.close()
         conn.close()
-
+        
+        
 # ======================
 # ✅ Signup
 # ======================
