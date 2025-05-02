@@ -38,6 +38,16 @@ except Exception as e:
     mongo = None
     mongo_chatbot = None
 
+# === MySQL Connection Function ===
+def get_db_connection():
+    return mysql.connector.connect(
+        host="sanathanamysql.mysql.database.azure.com",
+        user="techlabs@sanathanamysql",
+        password="techlabs@123",
+        database="sanathana_chatbot_db",
+        ssl_disabled=True
+    )
+
 # === MySQL EMP ID Validation Endpoint ===
 @app.route('/validate_emp_id', methods=['POST'])
 def validate_emp_id():
@@ -45,13 +55,7 @@ def validate_emp_id():
     emp_id = data.get('emp_id')
 
     try:
-        conn = mysql.connector.connect(
-            host="sanathanamysql.mysql.database.azure.com",     # ✅ Azure MySQL host
-            user="techlabs@sanathanamysql",                    # ✅ Azure MySQL user
-            password="techlabs@123",                           # ✅ Azure MySQL password
-            database="sanathana_chatbot_db",
-            ssl_disabled=True                                  # ✅ Use ssl_ca if needed for prod
-        )
+        conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT emp_id FROM employee_details WHERE emp_id = %s", (emp_id,))
         result = cursor.fetchone()
