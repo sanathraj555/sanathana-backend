@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 import mysql.connector
 import logging
-from app import get_db_connection
+from db import get_db_connection
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Setup logging

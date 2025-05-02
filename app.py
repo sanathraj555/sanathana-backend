@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_pymongo import PyMongo
-import mysql.connector
 import os
 import logging
 
@@ -37,39 +36,6 @@ except Exception as e:
     app.logger.error(f"❌ Cosmos DB Connection Failed: {e}")
     mongo = None
     mongo_chatbot = None
-
-# === MySQL Connection Function ===
-def get_db_connection():
-    return mysql.connector.connect(
-        host="sanathanamysql.mysql.database.azure.com",
-        user="techlabs@sanathanamysql",
-        password="techlabs@123",
-        database="sanathana_chatbot_db",
-        ssl_disabled=True
-    )
-
-# === MySQL EMP ID Validation Endpoint ===
-@app.route('/validate_emp_id', methods=['POST'])
-def validate_emp_id():
-    data = request.get_json()
-    emp_id = data.get('emp_id')
-
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT emp_id FROM employee_details WHERE emp_id = %s", (emp_id,))
-        result = cursor.fetchone()
-        cursor.close()
-        conn.close()
-
-        if result:
-            return jsonify({'valid': True})
-        else:
-            return jsonify({'valid': False}), 404
-
-    except Exception as e:
-        app.logger.error(f"❌ MySQL Error: {e}")
-        return jsonify({'valid': False, 'error': str(e)}), 500
 
 # === Register Blueprints ===
 from auth import auth_bp
