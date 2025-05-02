@@ -8,7 +8,7 @@ import logging
 app = Flask(__name__, static_folder='frontend/build', static_url_path='')
 
 # ✅ Allow CORS for frontend requests
-CORS(app, resources={r"/*": {"origins": ["https://yellow-hill-0dae7d700.6.azurestaticapps.net"]}}, supports_credentials=True, methods=["GET","POST","OPTIONS"])
+CORS(app, resources={r"/*": {"origins": ["http://localhost:3000","https://yellow-hill-0dae7d700.6.azurestaticapps.net"]}}, supports_credentials=True, methods=["GET","POST","OPTIONS"])
 
 # ✅ Azure Cosmos DB URI (MongoDB API) using environment variable
 cosmos_uri = os.getenv('MONGO_URI','mongodb+srv://sars:Sanathana123@sanathanadb.mongo.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000')  # Fallback to default if env var not set
