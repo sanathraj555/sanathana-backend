@@ -49,7 +49,8 @@ def serve_static(filename):
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_react_app(path):
-    if path.startswith("auth") or path.startswith("chatbot") or path.startswith("api"):
+    # only block actual API prefixes, allow /chatbot to hit your blueprint
+    if path.startswith("auth") or path.startswith("api"):
         return jsonify({"error": "API route not found"}), 404
     return send_from_directory(app.static_folder, 'index.html')
 
