@@ -9,31 +9,25 @@ auth_bp = Blueprint("auth", __name__)
 
 @auth_bp.route("/verify-empid", methods=["POST"])
 def verify_empid():
-    print("✅ HIT /auth/verify-empid")
-    data = request.get_json(force=True, silent=True)
-    print("📥 Incoming Payload:", data)
+    print("✅ HIT /verify-empid")
+    data = request.get_json()
+    print("📥 DATA:", data)
 
-    user_id = data.get("user_id", "").strip()
-    if not user_id:
-        return jsonify({"error": "Missing EMP ID"}), 400
+    emp_id = data.get("user_id", "").strip()
+    if not emp_id:
+        return jsonify({"valid": False, "error": "No EMP ID provided"}), 400
 
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT COUNT(*) AS emp_exists FROM employee_details WHERE emp_id = %s", (user_id,))
-        emp_check = cursor.fetchone()
-        print("✅ EMP Check Result:", emp_check)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT email FROM employee_details WHERE user_id = %s", (emp_id,))
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
 
-        return jsonify({"valid": emp_check["emp_exists"] == 1}), 200
-
-    except Exception as e:
-        print(f"❌ DB error in /verify-empid: {e}")
-        return jsonify({"error": "Internal server error"}), 500
-    finally:
-        if 'cursor' in locals():
-            cursor.close()
-        if 'conn' in locals():
-            conn.close()
+    if result:
+        return jsonify({"valid": True, "email": result[0]}), 200
+    else:
+        return jsonify({"valid": False}), 200
 
 
 # === Signup ===
