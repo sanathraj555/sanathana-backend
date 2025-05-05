@@ -7,10 +7,12 @@ from db import get_db_connection
 logging.basicConfig(level=logging.DEBUG)
 auth_bp = Blueprint("auth", __name__)
 
-# === Verify EMP ID ===
 @auth_bp.route("/verify-empid", methods=["POST"])
 def verify_empid():
+    print("✅ HIT /auth/verify-empid")
     data = request.get_json(force=True, silent=True)
+    print("📥 Incoming Payload:", data)
+
     user_id = data.get("user_id", "").strip()
     if not user_id:
         return jsonify({"error": "Missing EMP ID"}), 400
@@ -20,12 +22,19 @@ def verify_empid():
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT COUNT(*) AS emp_exists FROM employee_details WHERE emp_id = %s", (user_id,))
         emp_check = cursor.fetchone()
+        print("✅ EMP Check Result:", emp_check)
+
         return jsonify({"valid": emp_check["emp_exists"] == 1}), 200
-    except mysql.connector.Error as err:
-        return jsonify({"error": "Database error"}), 500
+
+    except Exception as e:
+        print(f"❌ DB error in /verify-empid: {e}")
+        return jsonify({"error": "Internal server error"}), 500
     finally:
-        cursor.close()
-        conn.close()
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals():
+            conn.close()
+
 
 # === Signup ===
 @auth_bp.route("/signup", methods=["POST"])
