@@ -3,6 +3,6 @@ flask-cors
 flask-pymongo
 pymongo
 mysql-connector-python
-bcrypt
+bcrypt==4.0.1
 python-dotenv
 gunicorn

@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
 import mysql.connector
 import logging
+import bcrypt
 from db import get_db_connection
-from werkzeug.security import generate_password_hash, check_password_hash
 
 # Setup logging
 logging.basicConfig(level=logging.DEBUG)
@@ -76,7 +76,8 @@ def signup():
         if user_check and user_check["user_count"] > 0:
             return jsonify({"error": "User ID already exists"}), 409
 
-        hashed_password = generate_password_hash(password, method='sha256')
+        # ✅ Use bcrypt to hash password
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         cursor.execute("INSERT INTO users (user_id, password) VALUES (%s, %s)", (user_id, hashed_password))
         conn.commit()
 
@@ -121,7 +122,7 @@ def login():
             return jsonify({"error": "User not found"}), 404
 
         stored_password = user["password"]
-        if not check_password_hash(stored_password, password):
+        if not bcrypt.checkpw(password.encode('utf-8'), stored_password.encode('utf-8')):
             return jsonify({"error": "Invalid password"}), 401
 
         print("✅ Login successful")
