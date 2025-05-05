@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
 import mysql.connector
 import logging
 import bcrypt
@@ -25,11 +25,9 @@ def verify_empid():
         conn = get_db_connection()
         print("🟢 DB Connection Success")
         cursor = conn.cursor(dictionary=True)
-        print(f"🔎 Executing query with user_id = '{user_id}'")
         cursor.execute("SELECT COUNT(*) AS emp_exists FROM employee_details WHERE emp_id = %s", (user_id,))
         emp_check = cursor.fetchone()
         print("✅ Query Result:", emp_check)
-
         return jsonify({"valid": emp_check["emp_exists"] == 1}), 200
 
     except mysql.connector.Error as err:
@@ -76,7 +74,6 @@ def signup():
         if user_check and user_check["user_count"] > 0:
             return jsonify({"error": "User ID already exists"}), 409
 
-        # ✅ Use bcrypt to hash password
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         cursor.execute("INSERT INTO users (user_id, password) VALUES (%s, %s)", (user_id, hashed_password))
         conn.commit()
@@ -126,7 +123,10 @@ def login():
             return jsonify({"error": "Invalid password"}), 401
 
         print("✅ Login successful")
-        return jsonify({"message": "Login successful!"}), 200
+        # ✅ Set session cookie for 30 mins
+        resp = make_response(jsonify({"message": "Login successful!"}))
+        resp.set_cookie("logged_in", "true", httponly=True, samesite='Lax', max_age=1800)
+        return resp
 
     except mysql.connector.Error as err:
         logging.error(f"❌ Login DB error: {err}")
@@ -137,3 +137,24 @@ def login():
             conn.close()
         except:
             pass
+
+# ======================
+# ✅ Logout
+# ======================
+@auth_bp.route("/logout", methods=["POST"])
+def logout():
+    print("✅ Route /auth/logout HIT")
+    resp = make_response(jsonify({"message": "Logged out"}))
+    resp.set_cookie("logged_in", "", max_age=0)
+    return resp
+
+# ======================
+# ✅ Check Session
+# ======================
+@auth_bp.route("/check-session", methods=["GET"])
+def check_session():
+    logged_in = request.cookies.get("logged_in")
+    if logged_in == "true":
+        return jsonify({"logged_in": True}), 200
+    else:
+        return jsonify({"logged_in": False}), 401
