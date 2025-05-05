@@ -1,8 +1,9 @@
+# chatbot.py
 import logging
 from flask import Blueprint, request, jsonify, current_app
 
-# ✅ Initialize Chatbot Blueprint
-chatbot_bp = Blueprint("chatbot", __name__, url_prefix="/chatbot")
+# ✅ Initialize Chatbot Blueprint (no prefix here)
+chatbot_bp = Blueprint("chatbot", __name__)
 
 # ✅ Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -25,15 +26,13 @@ def get_sections():
 
         sections_list = [s["section_name"] for s in sections_cursor if "section_name" in s]
 
-        # 🔍 Log for debugging
         logging.info(f"✅ Sections retrieved: {sections_list}")
-
         if not sections_list:
             logging.warning("⚠️ No sections found in the database.")
         return jsonify({"sections": sections_list}), 200
 
     except Exception as e:
-        logging.error(f"❌ Error fetching sections: {str(e)}")
+        logging.error(f"❌ Error fetching sections: {e}")
         return jsonify({"error": "Failed to fetch sections"}), 500
 
 # ✅ Endpoint: Get sub-sections or questions
@@ -49,18 +48,17 @@ def get_section_questions():
 
         # Step 1: Direct match on main section
         section = sections_collection.find_one({"section_name": section_name})
-
         if section:
-            if "sub_sections" in section and section["sub_sections"]:
+            if section.get("sub_sections"):
                 return jsonify({
                     "sub_sections": [s["sub_section_name"] for s in section["sub_sections"]]
                 }), 200
             return jsonify({"questions": section.get("questions", [])}), 200
 
-        # Step 2: Match within sub-sections
-        parent_section = sections_collection.find_one({"sub_sections.sub_section_name": section_name})
-        if parent_section:
-            for sub in parent_section["sub_sections"]:
+        # Step 2: Match within first-level sub-sections
+        parent = sections_collection.find_one({"sub_sections.sub_section_name": section_name})
+        if parent:
+            for sub in parent["sub_sections"]:
                 if sub["sub_section_name"] == section_name:
                     return jsonify({
                         "sub_sections": [s["sub_section_name"] for s in sub.get("sub_sections", [])],
@@ -68,20 +66,20 @@ def get_section_questions():
                     }), 200
 
         # Step 3: Deep nested search
-        def find_nested(sub_sections, name):
-            for sub in sub_sections:
+        def find_nested(subs, name):
+            for sub in subs:
                 if sub.get("sub_section_name") == name:
                     return sub
                 if "sub_sections" in sub:
-                    result = find_nested(sub["sub_sections"], name)
-                    if result:
-                        return result
+                    found = find_nested(sub["sub_sections"], name)
+                    if found:
+                        return found
             return None
 
-        all_sections = sections_collection.find({}, {"_id": 0, "sub_sections": 1})
-        for section in all_sections:
-            if "sub_sections" in section:
-                match = find_nested(section["sub_sections"], section_name)
+        all_secs = sections_collection.find({}, {"_id": 0, "sub_sections": 1})
+        for sec in all_secs:
+            if "sub_sections" in sec:
+                match = find_nested(sec["sub_sections"], section_name)
                 if match:
                     return jsonify({
                         "sub_sections": [s["sub_section_name"] for s in match.get("sub_sections", [])],
@@ -91,7 +89,7 @@ def get_section_questions():
         return jsonify({"error": "Section not found"}), 404
 
     except Exception as e:
-        logging.error(f"❌ Error fetching section questions: {str(e)}")
+        logging.error(f"❌ Error fetching section questions: {e}")
         return jsonify({"error": "Failed to fetch questions"}), 500
 
 # ✅ Endpoint: Get chatbot response for a question
@@ -108,40 +106,40 @@ def chatbot_reply():
         mongo_chatbot = get_mongo_chatbot()
         sections_collection = mongo_chatbot["sections"]
 
-        # Step 1: Main section questions
+        # 1) Main section questions
         section = sections_collection.find_one({"section_name": selected_section})
-        if section and "questions" in section:
+        if section and section.get("questions"):
             for q in section["questions"]:
                 if q["question"].strip().lower() == user_input:
                     return jsonify({"response": q["answer"]}), 200
 
-        # Step 2: Sub-section match
-        if section and "sub_sections" in section:
+        # 2) First-level sub-section
+        if section and section.get("sub_sections"):
             for sub in section["sub_sections"]:
-                if sub.get("sub_section_name") == selected_section:
+                if sub["sub_section_name"] == selected_section:
                     for q in sub.get("questions", []):
                         if q["question"].strip().lower() == user_input:
                             return jsonify({"response": q["answer"]}), 200
 
-        # Step 3: Deep nested match
-        def search_nested(sub_sections):
-            for sub in sub_sections:
-                if sub.get("sub_section_name") == selected_section:
+        # 3) Deep nested
+        def search_nested(subs):
+            for sub in subs:
+                if sub["sub_section_name"] == selected_section:
                     for q in sub.get("questions", []):
                         if q["question"].strip().lower() == user_input:
                             return jsonify({"response": q["answer"]}), 200
                 if "sub_sections" in sub:
-                    result = search_nested(sub["sub_sections"])
-                    if result:
-                        return result
+                    res = search_nested(sub["sub_sections"])
+                    if res:
+                        return res
             return None
 
-        result = search_nested(section.get("sub_sections", []) if section else [])
-        if result:
-            return result
+        res = search_nested(section.get("sub_sections", []) if section else [])
+        if res:
+            return res
 
         return jsonify({"response": "Sorry, I don't have an answer for that."}), 200
 
     except Exception as e:
-        logging.error(f"❌ Error fetching response: {str(e)}")
+        logging.error(f"❌ Error fetching response: {e}")
         return jsonify({"error": "Failed to fetch response"}), 500
