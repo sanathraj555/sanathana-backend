@@ -1,62 +1,38 @@
-from flask import Blueprint, request, jsonify, make_response
+from flask import Blueprint, request, jsonify, make_response, session
 import mysql.connector
-import logging
 import bcrypt
+import logging
 from db import get_db_connection
 
-# Setup logging
 logging.basicConfig(level=logging.DEBUG)
 auth_bp = Blueprint("auth", __name__)
 
-# ======================
-# ✅ Verify EMP ID
-# ======================
+# === Verify EMP ID ===
 @auth_bp.route("/verify-empid", methods=["POST"])
 def verify_empid():
-    print("✅ Route /auth/verify-empid HIT")
     data = request.get_json(force=True, silent=True)
-    print("📥 Payload:", data)
-
     user_id = data.get("user_id", "").strip()
     if not user_id:
         return jsonify({"error": "Missing EMP ID"}), 400
 
     try:
         conn = get_db_connection()
-        print("🟢 DB Connection Success")
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT COUNT(*) AS emp_exists FROM employee_details WHERE emp_id = %s", (user_id,))
         emp_check = cursor.fetchone()
-        print("✅ Query Result:", emp_check)
         return jsonify({"valid": emp_check["emp_exists"] == 1}), 200
-
     except mysql.connector.Error as err:
-        print(f"❌ MySQL error: {err}")
         return jsonify({"error": "Database error"}), 500
-    except Exception as e:
-        print(f"❗ Other error: {e}")
-        return jsonify({"error": "Internal server error"}), 500
     finally:
-        if 'cursor' in locals():
-            cursor.close()
-        if 'conn' in locals():
-            conn.close()
+        cursor.close()
+        conn.close()
 
-# ======================
-# ✅ Signup
-# ======================
+# === Signup ===
 @auth_bp.route("/signup", methods=["POST"])
 def signup():
-    print("✅ Route /auth/signup HIT")
     data = request.get_json(force=True, silent=True)
-    print("📥 Payload:", data)
-
-    if not data:
-        return jsonify({"error": "Missing JSON body"}), 400
-
     user_id = data.get("user_id")
     password = data.get("password")
-
     if not user_id or not password:
         return jsonify({"error": "Missing user_id or password"}), 400
 
@@ -77,32 +53,17 @@ def signup():
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         cursor.execute("INSERT INTO users (user_id, password) VALUES (%s, %s)", (user_id, hashed_password))
         conn.commit()
-
-        print("✅ Signup successful")
         return jsonify({"message": "Signup successful!"}), 201
-
     except mysql.connector.Error as err:
-        logging.error(f"❌ Signup DB error: {err}")
         return jsonify({"error": f"Database error: {err}"}), 500
     finally:
-        try:
-            cursor.close()
-            conn.close()
-        except:
-            pass
+        cursor.close()
+        conn.close()
 
-# ======================
-# ✅ Login
-# ======================
+# === Login ===
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    print("✅ Route /auth/login HIT")
     data = request.get_json(force=True, silent=True)
-    print("📥 Payload:", data)
-
-    if not data:
-        return jsonify({"error": "Missing JSON body"}), 400
-
     user_id = data.get("user_id")
     password = data.get("password")
 
@@ -118,43 +79,26 @@ def login():
         if not user:
             return jsonify({"error": "User not found"}), 404
 
-        stored_password = user["password"]
-        if not bcrypt.checkpw(password.encode('utf-8'), stored_password.encode('utf-8')):
+        if not bcrypt.checkpw(password.encode('utf-8'), user["password"].encode('utf-8')):
             return jsonify({"error": "Invalid password"}), 401
 
-        print("✅ Login successful")
-        # ✅ Set session cookie for 30 mins
-        resp = make_response(jsonify({"message": "Login successful!"}))
-        resp.set_cookie("logged_in", "true", httponly=True, samesite='Lax', max_age=1800)
-        return resp
-
+        session["user_id"] = user_id  # ✅ Store in session
+        return jsonify({"message": "Login successful!"}), 200
     except mysql.connector.Error as err:
-        logging.error(f"❌ Login DB error: {err}")
         return jsonify({"error": f"Database error: {err}"}), 500
     finally:
-        try:
-            cursor.close()
-            conn.close()
-        except:
-            pass
+        cursor.close()
+        conn.close()
 
-# ======================
-# ✅ Logout
-# ======================
+# === Logout ===
 @auth_bp.route("/logout", methods=["POST"])
 def logout():
-    print("✅ Route /auth/logout HIT")
-    resp = make_response(jsonify({"message": "Logged out"}))
-    resp.set_cookie("logged_in", "", max_age=0)
-    return resp
+    session.clear()
+    return jsonify({"message": "Logged out"}), 200
 
-# ======================
-# ✅ Check Session
-# ======================
-@auth_bp.route("/check-session", methods=["GET"])
-def check_session():
-    logged_in = request.cookies.get("logged_in")
-    if logged_in == "true":
-        return jsonify({"logged_in": True}), 200
-    else:
-        return jsonify({"logged_in": False}), 401
+# === Check Auth Session ===
+@auth_bp.route("/check", methods=["GET"])
+def check_auth():
+    if "user_id" in session:
+        return jsonify({"status": "ok"}), 200
+    return jsonify({"error": "unauthenticated"}), 401

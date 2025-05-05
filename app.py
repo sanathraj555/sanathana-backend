@@ -1,11 +1,18 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, session
 from flask_cors import CORS
+from pymongo import MongoClient
+from dotenv import load_dotenv
 import os
 import logging
-from pymongo import MongoClient
+
+# === Load environment variables ===
+load_dotenv()  # Loads variables from .env file
 
 # === Initialize Flask App ===
 app = Flask(__name__, static_folder='frontend/build', static_url_path='')
+
+# 🔐 Secret key for session management
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback_secret")  # Use .env value or fallback
 
 # === Logging ===
 logging.basicConfig(level=logging.INFO)
@@ -19,12 +26,8 @@ CORS(app, resources={
     }
 }, supports_credentials=True, methods=["GET", "POST", "OPTIONS"])
 
-# === MongoDB (Cosmos DB) Setup with pymongo ===
-cosmos_uri = os.getenv(
-    'MONGO_URI',
-    'mongodb://sanathana-mongodb:m1ErbvRoj8vA4M3tD56mvNTEch5tasOIP0mrvfxBtqiTZYNdEVz172UeCa5qK1YI5J8xZSItPwYNACDbmUcvzw==@sanathana-mongodb.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@sanathana-mongodb@'
-)
-
+# === MongoDB (CosmosDB) Setup ===
+cosmos_uri = os.getenv('MONGO_URI')
 try:
     client = MongoClient(cosmos_uri, tls=True, tlsAllowInvalidCertificates=True)
     client.admin.command("ping")
@@ -48,7 +51,6 @@ def serve_static(filename):
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_react_app(path):
-    # only block actual API prefixes, allow /chatbot to hit your blueprint
     if path.startswith("auth") or path.startswith("api"):
         return jsonify({"error": "API route not found"}), 404
     return send_from_directory(app.static_folder, 'index.html')
