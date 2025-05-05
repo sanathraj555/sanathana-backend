@@ -1,43 +1,62 @@
-from flask import Blueprint, request, jsonify, make_response, session
+from flask import Blueprint, request, jsonify, session
 import mysql.connector
 import bcrypt
 import logging
 from db import get_db_connection
+from flask_cors import CORS, cross_origin
 
 logging.basicConfig(level=logging.DEBUG)
 auth_bp = Blueprint("auth", __name__)
 
-@auth_bp.route("/verify-empid", methods=["POST"])
-def verify_empid():
-    print("✅ HIT /verify-empid")
-    data = request.get_json(force=True)
-    print("📥 DATA:", data)
+# CORS Handling (Adjust origins clearly as per your frontend URL)
+CORS(auth_bp, supports_credentials=True, origins=["https://yellow-hill-0dae7d700.6.azurestaticapps.net"])
 
-    emp_id = data.get("user_id", "").strip()
+# Verify EMP ID clearly and robustly
+@auth_bp.route("/verify-empid", methods=["POST"])
+@cross_origin(supports_credentials=True)
+def verify_empid():
+    print("✅ Endpoint HIT: /verify-empid")
+    
+    try:
+        data = request.get_json(force=True)
+        print("📥 Received JSON:", data)
+    except Exception as e:
+        logging.error("❌ JSON Parsing Error: %s", str(e))
+        return jsonify({"valid": False, "error": "Invalid JSON provided"}), 400
+
+    emp_id = data.get("user_id", "").strip() if data else ""
+
     if not emp_id:
+        logging.warning("❌ No EMP ID provided.")
         return jsonify({"valid": False, "error": "No EMP ID provided"}), 400
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    # only check existence
-    cursor.execute(
-      "SELECT COUNT(*) FROM employee_details WHERE emp_id = %s",
-      (emp_id,)
-    )
-    count = cursor.fetchone()[0]
-    cursor.close()
-    conn.close()
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT COUNT(*) FROM employee_details WHERE emp_id = %s",
+            (emp_id,)
+        )
+        count = cursor.fetchone()[0]
+        logging.info("📌 EMP ID (%s) existence check result: %s", emp_id, count)
+        return jsonify({"valid": count > 0}), 200
 
-    # always return 200 so front‑end .then() runs
-    return jsonify({"valid": count > 0}), 200
+    except mysql.connector.Error as err:
+        logging.error("❌ Database error: %s", err)
+        return jsonify({"valid": False, "error": f"Database error: {err}"}), 500
 
+    finally:
+        cursor.close()
+        conn.close()
 
-# === Signup ===
+# Signup route
 @auth_bp.route("/signup", methods=["POST"])
+@cross_origin(supports_credentials=True)
 def signup():
     data = request.get_json(force=True, silent=True)
     user_id = data.get("user_id")
     password = data.get("password")
+
     if not user_id or not password:
         return jsonify({"error": "Missing user_id or password"}), 400
 
@@ -45,40 +64,35 @@ def signup():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
-        cursor.execute(
-            "SELECT COUNT(*) AS emp_exists FROM employee_details WHERE emp_id = %s",
-            (user_id,)
-        )
-        emp_check = cursor.fetchone()
-        if not emp_check or emp_check["emp_exists"] == 0:
+        cursor.execute("SELECT COUNT(*) AS emp_exists FROM employee_details WHERE emp_id = %s", (user_id,))
+        emp_exists = cursor.fetchone()["emp_exists"]
+        
+        if emp_exists == 0:
             return jsonify({"error": "Invalid EMP ID. Access restricted to employees only."}), 403
 
-        cursor.execute(
-            "SELECT COUNT(*) AS user_count FROM users WHERE user_id = %s",
-            (user_id,)
-        )
-        user_check = cursor.fetchone()
-        if user_check and user_check["user_count"] > 0:
+        cursor.execute("SELECT COUNT(*) AS user_count FROM users WHERE user_id = %s", (user_id,))
+        user_count = cursor.fetchone()["user_count"]
+        
+        if user_count > 0:
             return jsonify({"error": "User ID already exists"}), 409
 
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        cursor.execute(
-            "INSERT INTO users (user_id, password) VALUES (%s, %s)",
-            (user_id, hashed_password)
-        )
+        cursor.execute("INSERT INTO users (user_id, password) VALUES (%s, %s)", (user_id, hashed_password))
         conn.commit()
+
         return jsonify({"message": "Signup successful!"}), 201
 
     except mysql.connector.Error as err:
+        logging.error("❌ Database error during signup: %s", err)
         return jsonify({"error": f"Database error: {err}"}), 500
 
     finally:
         cursor.close()
         conn.close()
 
-
-# === Login ===
+# Login route
 @auth_bp.route("/login", methods=["POST"])
+@cross_origin(supports_credentials=True)
 def login():
     data = request.get_json(force=True, silent=True)
     user_id = data.get("user_id")
@@ -93,6 +107,7 @@ def login():
 
         cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
         user = cursor.fetchone()
+
         if not user:
             return jsonify({"error": "User not found"}), 404
 
@@ -103,22 +118,23 @@ def login():
         return jsonify({"message": "Login successful!"}), 200
 
     except mysql.connector.Error as err:
+        logging.error("❌ Database error during login: %s", err)
         return jsonify({"error": f"Database error: {err}"}), 500
 
     finally:
         cursor.close()
         conn.close()
 
-
-# === Logout ===
+# Logout route
 @auth_bp.route("/logout", methods=["POST"])
+@cross_origin(supports_credentials=True)
 def logout():
     session.clear()
     return jsonify({"message": "Logged out"}), 200
 
-
-# === Check Auth Session ===
+# Check Authentication
 @auth_bp.route("/check", methods=["GET"])
+@cross_origin(supports_credentials=True)
 def check_auth():
     if "user_id" in session:
         return jsonify({"status": "ok"}), 200
