@@ -17,10 +17,7 @@ def verify_empid():
     data = request.get_json(force=True, silent=True)
     print("📥 Payload:", data)
 
-    if not data:
-        return jsonify({"error": "Missing JSON body"}), 400
-
-    user_id = data.get("user_id")
+    user_id = data.get("user_id", "").strip()
     if not user_id:
         return jsonify({"error": "Missing EMP ID"}), 400
 
@@ -28,7 +25,7 @@ def verify_empid():
         conn = get_db_connection()
         print("🟢 DB Connection Success")
         cursor = conn.cursor(dictionary=True)
-        print(f"🔎 Executing query with user_id = {user_id}")
+        print(f"🔎 Executing query with user_id = '{user_id}'")
         cursor.execute("SELECT COUNT(*) AS emp_exists FROM employee_details WHERE emp_id = %s", (user_id,))
         emp_check = cursor.fetchone()
         print("✅ Query Result:", emp_check)
@@ -39,14 +36,13 @@ def verify_empid():
         print(f"❌ MySQL error: {err}")
         return jsonify({"error": "Database error"}), 500
     except Exception as e:
-        print(f"❗ Unexpected error: {e}")
+        print(f"❗ Other error: {e}")
         return jsonify({"error": "Internal server error"}), 500
     finally:
-        try:
+        if 'cursor' in locals():
             cursor.close()
+        if 'conn' in locals():
             conn.close()
-        except:
-            pass
 
 # ======================
 # ✅ Signup
