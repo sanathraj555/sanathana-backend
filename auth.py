@@ -10,7 +10,7 @@ auth_bp = Blueprint("auth", __name__)
 @auth_bp.route("/verify-empid", methods=["POST"])
 def verify_empid():
     print("✅ HIT /verify-empid")
-    data = request.get_json()
+    data = request.get_json(force=True)
     print("📥 DATA:", data)
 
     emp_id = data.get("user_id", "").strip()
@@ -19,15 +19,17 @@ def verify_empid():
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT email FROM employee_details WHERE user_id = %s", (emp_id,))
-    result = cursor.fetchone()
+    # only check existence
+    cursor.execute(
+      "SELECT COUNT(*) FROM employee_details WHERE emp_id = %s",
+      (emp_id,)
+    )
+    count = cursor.fetchone()[0]
     cursor.close()
     conn.close()
 
-    if result:
-        return jsonify({"valid": True, "email": result[0]}), 200
-    else:
-        return jsonify({"valid": False}), 200
+    # always return 200 so front‑end .then() runs
+    return jsonify({"valid": count > 0}), 200
 
 
 # === Signup ===
@@ -43,25 +45,37 @@ def signup():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
-        cursor.execute("SELECT COUNT(*) AS emp_exists FROM employee_details WHERE emp_id = %s", (user_id,))
+        cursor.execute(
+            "SELECT COUNT(*) AS emp_exists FROM employee_details WHERE emp_id = %s",
+            (user_id,)
+        )
         emp_check = cursor.fetchone()
         if not emp_check or emp_check["emp_exists"] == 0:
             return jsonify({"error": "Invalid EMP ID. Access restricted to employees only."}), 403
 
-        cursor.execute("SELECT COUNT(*) AS user_count FROM users WHERE user_id = %s", (user_id,))
+        cursor.execute(
+            "SELECT COUNT(*) AS user_count FROM users WHERE user_id = %s",
+            (user_id,)
+        )
         user_check = cursor.fetchone()
         if user_check and user_check["user_count"] > 0:
             return jsonify({"error": "User ID already exists"}), 409
 
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        cursor.execute("INSERT INTO users (user_id, password) VALUES (%s, %s)", (user_id, hashed_password))
+        cursor.execute(
+            "INSERT INTO users (user_id, password) VALUES (%s, %s)",
+            (user_id, hashed_password)
+        )
         conn.commit()
         return jsonify({"message": "Signup successful!"}), 201
+
     except mysql.connector.Error as err:
         return jsonify({"error": f"Database error: {err}"}), 500
+
     finally:
         cursor.close()
         conn.close()
+
 
 # === Login ===
 @auth_bp.route("/login", methods=["POST"])
@@ -85,19 +99,23 @@ def login():
         if not bcrypt.checkpw(password.encode('utf-8'), user["password"].encode('utf-8')):
             return jsonify({"error": "Invalid password"}), 401
 
-        session["user_id"] = user_id  # ✅ Store in session
+        session["user_id"] = user_id
         return jsonify({"message": "Login successful!"}), 200
+
     except mysql.connector.Error as err:
         return jsonify({"error": f"Database error: {err}"}), 500
+
     finally:
         cursor.close()
         conn.close()
+
 
 # === Logout ===
 @auth_bp.route("/logout", methods=["POST"])
 def logout():
     session.clear()
     return jsonify({"message": "Logged out"}), 200
+
 
 # === Check Auth Session ===
 @auth_bp.route("/check", methods=["GET"])
