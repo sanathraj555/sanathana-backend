@@ -1,8 +1,8 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-from flask_pymongo import PyMongo
 import os
 import logging
+from pymongo import MongoClient
 
 # === Initialize Flask App ===
 app = Flask(__name__, static_folder='frontend/build', static_url_path='')
@@ -20,22 +20,20 @@ CORS(app, resources={
     }
 }, supports_credentials=True, methods=["GET", "POST", "OPTIONS"])
 
-# === MongoDB (Cosmos DB) Setup ===
+# === MongoDB (Cosmos DB) Setup with pymongo ===
 cosmos_uri = os.getenv(
     'MONGO_URI',
     'mongodb://sanathana-mongodb:m1ErbvRoj8vA4M3tD56mvNTEch5tasOIP0mrvfxBtqiTZYNdEVz172UeCa5qK1YI5J8xZSItPwYNACDbmUcvzw==@sanathana-mongodb.mongo.cosmos.azure.com:10255/?ssl=true&retrywrites=false&replicaSet=globaldb&maxIdleTimeMS=120000&appName=@sanathana-mongodb@'
 )
-app.config["MONGO_URI"] = cosmos_uri
 
 try:
-    mongo = PyMongo(app)
-    mongo.cx.admin.command('ping')
-    app.logger.info("✅ Connected to Azure Cosmos DB (MongoDB API)!")
-    mongo_chatbot = mongo.cx.get_database("sanathana_chatbot_v1")
+    client = MongoClient(cosmos_uri, tls=True, tlsAllowInvalidCertificates=True)
+    client.admin.command("ping")
+    app.mongo_chatbot = client["sanathana_chatbot_v1"]
+    app.logger.info("✅ Connected to MongoDB: sanathana_chatbot_v1")
 except Exception as e:
-    app.logger.error(f"❌ Cosmos DB Connection Failed: {e}")
-    mongo = None
-    mongo_chatbot = None
+    app.logger.error(f"❌ MongoDB connection failed: {e}")
+    app.mongo_chatbot = None
 
 # === Register Blueprints ===
 from auth import auth_bp
