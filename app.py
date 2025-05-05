@@ -14,7 +14,6 @@ logging.basicConfig(level=logging.INFO)
 CORS(app, resources={
     r"/*": {
         "origins": [
-            "http://localhost:3000",
             "https://yellow-hill-0dae7d700.6.azurestaticapps.net"
         ]
     }
