@@ -32,7 +32,10 @@ def verify_empid():
             return jsonify({"valid": False, "error": "Empty EMP ID"}), 400
 
         # Database check
+        print("🔌 Getting DB connection...")
         conn = get_db_connection()
+        print("✅ DB connection acquired.")
+
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM employee_details WHERE emp_id = %s", (emp_id,))
         count = cursor.fetchone()[0]
