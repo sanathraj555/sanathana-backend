@@ -11,32 +11,31 @@ auth_bp = Blueprint("auth", __name__)
 # CORS Handling (Adjust origins clearly as per your frontend URL)
 CORS(auth_bp, supports_credentials=True, origins=["https://yellow-hill-0dae7d700.6.azurestaticapps.net"])
 
-# Verify EMP ID clearly and robustly
 @auth_bp.route("/verify-empid", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def verify_empid():
     print("✅ Endpoint HIT: /verify-empid")
-    
+
     try:
-        data = request.get_json(force=True)
-        print("📥 Received JSON:", data)
+        data = request.get_json(force=True, silent=True)
+        print("📥 Parsed JSON:", data)
+
+        if not data or "user_id" not in data:
+            raise ValueError("Missing user_id field")
+
+        emp_id = data["user_id"].strip()
+
+        if not emp_id:
+            raise ValueError("Empty user_id string")
+
     except Exception as e:
-        logging.error("❌ JSON Parsing Error: %s", str(e))
-        return jsonify({"valid": False, "error": "Invalid JSON provided"}), 400
-
-    emp_id = data.get("user_id", "").strip() if data else ""
-
-    if not emp_id:
-        logging.warning("❌ No EMP ID provided.")
-        return jsonify({"valid": False, "error": "No EMP ID provided"}), 400
+        logging.error("❌ EMP ID extraction failed: %s", str(e))
+        return jsonify({"valid": False, "error": "Invalid EMP ID format"}), 400
 
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT COUNT(*) FROM employee_details WHERE emp_id = %s",
-            (emp_id,)
-        )
+        cursor.execute("SELECT COUNT(*) FROM employee_details WHERE emp_id = %s", (emp_id,))
         count = cursor.fetchone()[0]
         logging.info("📌 EMP ID (%s) existence check result: %s", emp_id, count)
         return jsonify({"valid": count > 0}), 200
@@ -48,6 +47,7 @@ def verify_empid():
     finally:
         cursor.close()
         conn.close()
+
 
 # Signup route
 @auth_bp.route("/signup", methods=["POST"])
