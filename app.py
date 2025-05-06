@@ -6,13 +6,13 @@ import os
 import logging
 
 # === Load environment variables ===
-load_dotenv()  # Loads variables from .env file
+load_dotenv()
 
 # === Initialize Flask App ===
 app = Flask(__name__, static_folder='frontend/build', static_url_path='')
 
 # 🔐 Secret key for session management
-app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback_secret")  # Use .env value or fallback
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback_secret")
 
 # === Logging ===
 logging.basicConfig(level=logging.INFO)
@@ -40,10 +40,11 @@ except Exception as e:
 # === Register Blueprints ===
 from auth import auth_bp
 from chatbot import chatbot_bp
+
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(chatbot_bp, url_prefix="/chatbot")
 
-# === Serve React Static Files ===
+# === Serve Static React App ===
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     return send_from_directory(os.path.join(app.static_folder, 'static'), filename)
@@ -60,7 +61,7 @@ def serve_react_app(path):
 def health_check():
     return jsonify({"status": "healthy"}), 200
 
-# === Start Flask App ===
+# === Start Flask App (only in local dev) ===
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=True)  # Debug TRUE for local testing
