@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory, session
+from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 from pymongo import MongoClient
 from dotenv import load_dotenv
@@ -9,7 +9,7 @@ import logging
 load_dotenv()
 
 # === Initialize Flask App ===
-app = Flask(__name__, static_folder='frontend/build', static_url_path='')
+app = Flask(__name__)
 
 # 🔐 Secret key for session management
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback_secret")
@@ -43,18 +43,6 @@ from chatbot import chatbot_bp
 
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(chatbot_bp, url_prefix="/chatbot")
-
-# === Serve Static React App ===
-@app.route('/static/<path:filename>')
-def serve_static(filename):
-    return send_from_directory(os.path.join(app.static_folder, 'static'), filename)
-
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def serve_react_app(path):
-    if path.startswith("auth") or path.startswith("api"):
-        return jsonify({"error": "API route not found"}), 404
-    return send_from_directory(app.static_folder, 'index.html')
 
 # === Health Check ===
 @app.route('/health', methods=["GET"])
