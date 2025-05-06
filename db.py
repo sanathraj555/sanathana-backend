@@ -15,7 +15,7 @@ def get_db_connection():
 
         conn = mysql.connector.connect(
             host=os.getenv("DB_HOST", "sanathanamysql.mysql.database.azure.com"),
-            user=os.getenv("DB_USER", "techlabs@sanathanamysql"),
+            user=os.getenv("DB_USER", "techlabs"),
             password=os.getenv("DB_PASSWORD", "labs@123"),
             database=os.getenv("DB_NAME", "sanathana_chatbot_db"),
             ssl_ca=CERT_PATH
