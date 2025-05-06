@@ -17,37 +17,39 @@ def verify_empid():
     print("✅ Endpoint HIT: /verify-empid")
 
     try:
+        # Parse JSON payload
         data = request.get_json(force=True, silent=True)
         print("📥 Parsed JSON:", data)
 
         if not data or "user_id" not in data:
-            raise ValueError("Missing user_id field")
+            print("❌ Missing 'user_id' in JSON")
+            return jsonify({"valid": False, "error": "Missing or invalid user_id"}), 400
 
         emp_id = data["user_id"].strip()
+        print("📥 EMP ID received:", emp_id)
 
         if not emp_id:
-            raise ValueError("Empty user_id string")
+            return jsonify({"valid": False, "error": "Empty EMP ID"}), 400
 
-    except Exception as e:
-        logging.error("❌ EMP ID extraction failed: %s", str(e))
-        return jsonify({"valid": False, "error": "Invalid EMP ID format"}), 400
-
-    try:
+        # Database check
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM employee_details WHERE emp_id = %s", (emp_id,))
         count = cursor.fetchone()[0]
-        logging.info("📌 EMP ID (%s) existence check result: %s", emp_id, count)
+        print("🔍 EMP ID found:", count > 0)
+
         return jsonify({"valid": count > 0}), 200
 
-    except mysql.connector.Error as err:
-        logging.error("❌ Database error: %s", err)
-        return jsonify({"valid": False, "error": f"Database error: {err}"}), 500
+    except Exception as e:
+        print("❌ Exception during EMP ID validation:", str(e))
+        return jsonify({"valid": False, "error": "Internal server error"}), 500
 
     finally:
-        cursor.close()
-        conn.close()
-
+        try:
+            cursor.close()
+            conn.close()
+        except:
+            pass
 
 # Signup route
 @auth_bp.route("/signup", methods=["POST"])
