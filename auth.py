@@ -14,7 +14,6 @@ CORS(auth_bp, supports_credentials=True, origins=[
     "http://localhost:3000"
 ])
 
-
 @auth_bp.route("/verify-empid", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def verify_empid():
@@ -47,7 +46,6 @@ def verify_empid():
             conn.close()
         except:
             pass
-
 
 # Signup route
 @auth_bp.route("/signup", methods=["POST"])
