@@ -58,7 +58,8 @@ def serve_react_app(path):
 def health_check():
     return jsonify({"status": "healthy"}), 200
 
-# === Start Flask App ===
+
+ #=== Start Flask App ===
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
