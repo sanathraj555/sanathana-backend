@@ -21,9 +21,8 @@ def fetch_one(query, params):
 @auth_bp.route("/verify-empid", methods=["POST"])
 def verify_empid():
     try:
+        logging.info(f"📦 Raw request data: {request.data}")  # <-- Add this line
         data = request.get_json(force=True, silent=True)
-        logging.info(f"📥 Raw data received: {data}")
-
         if not data:
             logging.error("🔴 No JSON payload received")
             return jsonify({"error": "Missing JSON payload"}), 400
@@ -33,16 +32,14 @@ def verify_empid():
             logging.error("🔴 EMP ID missing in request")
             return jsonify({"error": "Missing EMP ID"}), 400
 
-        logging.info(f"🔍 Verifying EMP ID: {user_id}")
+        logging.info(f"🔍 Validating EMP ID: {user_id}")
         result = fetch_one("SELECT COUNT(*) AS emp_exists FROM employee_details WHERE emp_id = %s", (user_id,))
-        is_valid = result["emp_exists"] == 1
-        logging.info(f"✅ EMP ID Valid: {is_valid}")
-
-        return jsonify({"valid": is_valid}), 200
+        return jsonify({"valid": result["emp_exists"] == 1}), 200
 
     except Exception as e:
-        logging.error(f"❌ Verify EMP ID error: {e}")
+        logging.error(f"❌ Verify EMP ID exception: {e}")
         return jsonify({"error": "Internal server error"}), 500
+
 
 
 # ✅ Signup
