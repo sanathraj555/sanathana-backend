@@ -21,34 +21,39 @@ def fetch_one(query, params):
 @auth_bp.route("/verify-empid", methods=["POST"])
 def verify_empid():
     try:
-        # Log raw data for debugging
+        # Log raw request data to see exactly what's coming in
         raw = request.get_data(as_text=True)
-        logging.info(f"📦 Raw request data: {raw}")
+        logging.info(f"📦 Raw request payload: {raw}")
 
-        # Safely try to parse JSON
+        # Try decoding JSON body
         try:
             data = request.get_json(force=True)
         except Exception as e:
-            logging.error(f"❌ JSON decode failed: {e}")
+            logging.error(f"❌ JSON decoding failed: {e}")
             return jsonify({"error": "Invalid JSON format"}), 400
 
         if not data:
-            logging.error("🔴 No JSON payload received")
-            return jsonify({"error": "Missing JSON payload"}), 400
+            logging.error("🔴 No JSON body received")
+            return jsonify({"error": "Missing JSON body"}), 400
 
         user_id = data.get("user_id", "").strip()
         if not user_id:
-            logging.error("🔴 EMP ID missing or empty in request")
+            logging.error("🔴 EMP ID missing or empty")
             return jsonify({"error": "Missing EMP ID"}), 400
 
         logging.info(f"🔍 Validating EMP ID: {user_id}")
-        result = fetch_one("SELECT COUNT(*) AS emp_exists FROM employee_details WHERE emp_id = %s", (user_id,))
-        return jsonify({"valid": result["emp_exists"] == 1}), 200
+        result = fetch_one(
+            "SELECT COUNT(*) AS emp_exists FROM employee_details WHERE emp_id = %s",
+            (user_id,)
+        )
+
+        is_valid = result and result["emp_exists"] == 1
+        logging.info(f"✅ EMP ID exists: {is_valid}")
+        return jsonify({"valid": is_valid}), 200
 
     except Exception as e:
-        logging.error(f"❌ Exception in EMP ID validation: {e}")
+        logging.exception("❌ Exception occurred in verify_empid:")
         return jsonify({"error": "Internal server error"}), 500
-
 
 
 
