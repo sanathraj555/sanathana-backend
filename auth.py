@@ -22,9 +22,15 @@ def fetch_one(query, params):
 def verify_empid():
     try:
         data = request.get_json(force=True, silent=True)
-        user_id = data.get("user_id", "").strip()
+        logging.info(f"📥 Raw data received: {data}")
 
+        if not data:
+            logging.error("🔴 No JSON payload received")
+            return jsonify({"error": "Missing JSON payload"}), 400
+
+        user_id = data.get("user_id", "").strip()
         if not user_id:
+            logging.error("🔴 EMP ID missing in request")
             return jsonify({"error": "Missing EMP ID"}), 400
 
         logging.info(f"🔍 Verifying EMP ID: {user_id}")
@@ -37,6 +43,7 @@ def verify_empid():
     except Exception as e:
         logging.error(f"❌ Verify EMP ID error: {e}")
         return jsonify({"error": "Internal server error"}), 500
+
 
 # ✅ Signup
 @auth_bp.route("/signup", methods=["POST"])
