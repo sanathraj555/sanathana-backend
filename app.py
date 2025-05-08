@@ -5,20 +5,16 @@ import logging
 from pymongo import MongoClient
 
 # === Initialize Flask App ===
-app = Flask(__name__, static_folder='frontend/build', static_url_path='')
+app = Flask(__name__, static_folder='frontend/build', static_url_path='',supports_credentials=True)
 
 # === Logging ===
 logging.basicConfig(level=logging.INFO)
 
 # === CORS Setup ===
-CORS(app, resources={
-    r"/*": {
-        "origins": [
-            "http://localhost:3000",
-            "https://yellow-hill-0dae7d700.6.azurestaticapps.net"
-        ]
-    }
-}, supports_credentials=True, methods=["GET", "POST", "OPTIONS"])
+CORS(app, supports_credentials=True, origins=[
+    "http://localhost:3000",
+    "https://yellow-hill-0dae7d700.6.azurestaticapps.net"
+])
 
 # === MongoDB (Cosmos DB) Setup with pymongo ===
 cosmos_uri = os.getenv(
