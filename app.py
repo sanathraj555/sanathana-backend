@@ -5,7 +5,7 @@ import logging
 from pymongo import MongoClient
 
 # === Initialize Flask App ===
-app = Flask(__name__, static_folder='frontend/build', static_url_path='',supports_credentials=True)
+app = Flask(__name__, static_folder='frontend/build', static_url_path='')
 
 # === Logging ===
 logging.basicConfig(level=logging.INFO)
