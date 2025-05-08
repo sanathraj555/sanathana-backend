@@ -1,8 +1,8 @@
-Flask
-flask-cors
-flask-pymongo
-pymongo
-mysql-connector-python
-bcrypt
-python-dotenv
-gunicorn
+Flask==2.3.2
+flask-cors==4.0.0
+flask-pymongo==2.4.0
+pymongo==4.4.0
+mysql-connector-python==8.1.0
+bcrypt==4.0.1
+python-dotenv==1.0.0
+gunicorn==23.0.0
