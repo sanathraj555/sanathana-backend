@@ -1,16 +1,11 @@
 name: Deploy Python Flask API to Azure Web App
 
-on:
-  push:
-    branches: [ main ]
-
+on: [ push ]
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
@@ -18,6 +13,3 @@ jobs:
           app-name: sanathana-backend
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: .
-          enable-oryx-build: true
-          scm-do-build-during-deployment: true
-
