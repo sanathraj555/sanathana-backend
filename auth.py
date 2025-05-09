@@ -21,47 +21,48 @@ def fetch_one(query, params):
 @auth_bp.route("/signup", methods=["POST"])
 def signup():
     try:
-        logging.info("✅ Signup request received.")
-
         data = request.get_json(force=True)
-        logging.info(f"📥 Parsed JSON: {data}")
+        logging.info(f"✅ Parsed JSON: {data}")
 
         if not data or 'user_id' not in data or 'password' not in data:
-            logging.warning("⚠️ Missing required fields.")
+            logging.warning("⚠️ Missing user_id or password in JSON.")
             return jsonify({"error": "Missing user_id or password"}), 400
 
         user_id = data['user_id'].strip()
         password = data['password'].strip()
 
         if not user_id or not password:
+            logging.warning("⚠️ user_id or password is empty after stripping.")
             return jsonify({"error": "user_id or password is empty"}), 400
 
-        # Check EMP ID
+        logging.info(f"🔍 Checking EMP ID existence: {user_id}")
         emp_check = fetch_one("SELECT emp_id FROM employee_details WHERE emp_id = %s", (user_id,))
         if not emp_check:
-            logging.warning(f"❌ EMP ID '{user_id}' not found.")
+            logging.warning(f"❌ EMP ID not found: {user_id}")
             return jsonify({"error": "Invalid EMP ID"}), 403
 
-        # Check if user already signed up
+        logging.info(f"🔍 Checking if user already exists: {user_id}")
         user_check = fetch_one("SELECT user_id FROM users WHERE user_id = %s", (user_id,))
         if user_check:
-            logging.warning(f"⚠️ User '{user_id}' already exists.")
+            logging.warning(f"⚠️ User ID already exists: {user_id}")
             return jsonify({"error": "User ID already exists"}), 409
 
-        # Create new user
+        logging.info(f"🔐 Hashing password for: {user_id}")
         hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
         conn = get_db_connection()
         cursor = conn.cursor()
+        logging.info(f"📝 Inserting new user: {user_id}")
         cursor.execute("INSERT INTO users (user_id, password) VALUES (%s, %s)", (user_id, hashed))
         conn.commit()
         cursor.close()
         conn.close()
 
-        logging.info(f"✅ User '{user_id}' created successfully.")
+        logging.info(f"✅ Signup successful for user: {user_id}")
         return jsonify({"message": "Signup successful!"}), 201
 
     except Exception as e:
-        logging.exception("❌ Signup crashed:")
+        logging.exception("❌ Exception in signup:")
         return jsonify({"error": "Internal server error"}), 500
 
 
