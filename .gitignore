@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg
+*.egg-info/
+dist/
+build/
+env/
+venv/
+ENV/
+env.bak/
+*.env
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Environment Variables and Secrets
+.env
+.env.*
+*.secret
+*.key
+*.pem
+*.cert
+
+# Flask cache and logs
+instance/
+.webassets-cache
+*.log
+
+# VSCode or IDE settings
+.vscode/
+.idea/
+
+# macOS / Windows system files
+.DS_Store
+Thumbs.db
