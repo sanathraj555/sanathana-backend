@@ -43,16 +43,20 @@ app.register_blueprint(chatbot_bp, url_prefix="/chatbot")
 def health_check():
     return jsonify({"status": "healthy"}), 200
 
-# === React Static File Serving ===
+# === React Static File Serving for Static Assets ===
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     return send_from_directory(os.path.join(app.static_folder, 'static'), filename)
 
+# === Catch-All to Serve React App ===
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_react_app(path):
-    if path.startswith(("auth", "chatbot", "api")):
+    # Let Flask handle any real API routes under /auth/* and /chatbot/*
+    if path.startswith("auth") or path.startswith("api"):
         return jsonify({"error": "API route not found"}), 404
+
+    # For everything else—including exact "/chatbot"—serve React's index.html
     return send_from_directory(app.static_folder, 'index.html')
 
 # === Start the Server ===
