@@ -4,7 +4,7 @@ from flask import Blueprint, request, jsonify, current_app
 # === Initialize Chatbot Blueprint ===
 chatbot_bp = Blueprint("chatbot", __name__, url_prefix="/chatbot")
 
-# === Setup Logging ===
+# === Logging Setup ===
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # === MongoDB Access Helper ===
@@ -22,14 +22,19 @@ def get_sections():
         db = get_mongo_chatbot()
         coll = db["sections"]
         cursor = coll.find({}, {"_id": 0, "section_name": 1})
-        sections = [doc["section_name"] for doc in cursor]
+        sections = [doc.get("section_name", "Unnamed") for doc in cursor]
+
+        if not sections:
+            logging.warning("⚠️ No sections found in the database.")
+
         logging.info(f"✅ Sections fetched: {sections}")
         return jsonify({"sections": sections}), 200
+
     except Exception as e:
         logging.exception("❌ Failed to fetch sections")
         return jsonify({"error": "Failed to fetch sections"}), 500
 
-# === Route: Get Sub-sections and/or Questions for a Section ===
+# === Route: Get Sub-sections and/or Questions ===
 @chatbot_bp.route("/section-questions", methods=["GET"])
 def get_section_questions():
     section_name = request.args.get("section", "").strip()
@@ -40,17 +45,18 @@ def get_section_questions():
         db = get_mongo_chatbot()
         coll = db["sections"]
 
-        # 1️⃣ Direct match with section
+        # Direct match
         section = coll.find_one({"section_name": section_name})
         if section:
             sub_sections = section.get("sub_sections", [])
             questions = section.get("questions", [])
+            logging.info(f"📁 Section '{section_name}' found directly.")
             return jsonify({
                 "sub_sections": [s["sub_section_name"] for s in sub_sections],
                 "questions": questions
             }), 200
 
-        # 2️⃣ Deep recursive search in nested sub-sections
+        # Recursive search in sub-sections
         def search_nested(subs):
             for sub in subs:
                 if sub.get("sub_section_name") == section_name:
@@ -64,6 +70,7 @@ def get_section_questions():
         for doc in coll.find({}, {"sub_sections": 1, "_id": 0}):
             found = search_nested(doc.get("sub_sections", []))
             if found:
+                logging.info(f"📂 Section '{section_name}' found nested.")
                 return jsonify({
                     "sub_sections": [s["sub_section_name"] for s in found.get("sub_sections", [])],
                     "questions": found.get("questions", [])
@@ -76,7 +83,7 @@ def get_section_questions():
         logging.exception("❌ Error in section-questions")
         return jsonify({"error": "Failed to fetch section questions"}), 500
 
-# === Route: Get Response to a Question ===
+# === Route: Get Answer to a Question ===
 @chatbot_bp.route("/chat-response", methods=["POST"])
 def chat_response():
     data = request.get_json(force=True)
@@ -96,20 +103,21 @@ def chat_response():
                     return q["answer"]
             return None
 
-        # 1️⃣ Direct match with section
+        # Direct section match
         section = coll.find_one({"section_name": section_name})
         if section:
+            # Check top-level questions
             answer = find_answer(section.get("questions", []))
             if answer:
                 return jsonify({"response": answer}), 200
 
-            # 2️⃣ Search in direct sub-sections
+            # Check direct sub-sections
             for sub in section.get("sub_sections", []):
                 answer = find_answer(sub.get("questions", []))
                 if answer:
                     return jsonify({"response": answer}), 200
 
-            # 3️⃣ Deep recursive search
+            # Deep recursive search
             def recursive_search(subs):
                 for sub in subs:
                     answer = find_answer(sub.get("questions", []))
