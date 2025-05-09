@@ -21,37 +21,35 @@ def fetch_one(query, params):
 @auth_bp.route("/signup", methods=["POST"])
 def signup():
     try:
-        # Log raw request body
-        raw = request.get_data(as_text=True)
-        logging.info(f"📦 RAW SIGNUP PAYLOAD: {raw}")
+        logging.info("✅ Signup request received.")
 
-        # Parse JSON
         data = request.get_json(force=True)
+        logging.info(f"📥 Parsed JSON: {data}")
+
         if not data or 'user_id' not in data or 'password' not in data:
+            logging.warning("⚠️ Missing required fields.")
             return jsonify({"error": "Missing user_id or password"}), 400
 
         user_id = data['user_id'].strip()
         password = data['password'].strip()
 
         if not user_id or not password:
-            return jsonify({"error": "Missing user_id or password"}), 400
+            return jsonify({"error": "user_id or password is empty"}), 400
 
-        # 🔍 Check if EMP ID is valid
+        # Check EMP ID
         emp_check = fetch_one("SELECT emp_id FROM employee_details WHERE emp_id = %s", (user_id,))
         if not emp_check:
-            logging.warning(f"🚫 Invalid EMP ID: {user_id}")
+            logging.warning(f"❌ EMP ID '{user_id}' not found.")
             return jsonify({"error": "Invalid EMP ID"}), 403
 
-        # 🛑 Check if user already signed up
+        # Check if user already signed up
         user_check = fetch_one("SELECT user_id FROM users WHERE user_id = %s", (user_id,))
         if user_check:
-            logging.warning(f"⚠️ User ID already exists: {user_id}")
+            logging.warning(f"⚠️ User '{user_id}' already exists.")
             return jsonify({"error": "User ID already exists"}), 409
 
-        # 🔐 Hash the password
+        # Create new user
         hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-
-        # ✅ Insert into users table
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("INSERT INTO users (user_id, password) VALUES (%s, %s)", (user_id, hashed))
@@ -59,12 +57,13 @@ def signup():
         cursor.close()
         conn.close()
 
-        logging.info(f"✅ Signup successful for user: {user_id}")
+        logging.info(f"✅ User '{user_id}' created successfully.")
         return jsonify({"message": "Signup successful!"}), 201
 
     except Exception as e:
-        logging.exception("❌ Signup error:")
+        logging.exception("❌ Signup crashed:")
         return jsonify({"error": "Internal server error"}), 500
+
 
 # ✅ Login
 @auth_bp.route("/login", methods=["POST"])
