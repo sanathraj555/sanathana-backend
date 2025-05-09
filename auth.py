@@ -21,7 +21,19 @@ def fetch_one(query, params):
 @auth_bp.route("/signup", methods=["POST"])
 def signup():
     try:
-        data = request.get_json(force=True, silent=True)
+        # Log raw body for debugging
+        raw = request.get_data(as_text=True)
+        logging.info(f"📦 RAW SIGNUP PAYLOAD: {raw}")
+
+        try:
+            data = request.get_json(force=True)
+        except Exception as e:
+            logging.warning(f"⚠️ JSON decode error: {e}")
+            return jsonify({"error": "Invalid JSON body"}), 400
+
+        if not data:
+            return jsonify({"error": "Missing JSON body"}), 400
+
         user_id = data.get("user_id", "").strip()
         password = data.get("password", "").strip()
 
@@ -58,7 +70,18 @@ def signup():
 @auth_bp.route("/login", methods=["POST"])
 def login():
     try:
-        data = request.get_json(force=True, silent=True)
+        raw = request.get_data(as_text=True)
+        logging.info(f"📦 RAW LOGIN PAYLOAD: {raw}")
+
+        try:
+            data = request.get_json(force=True)
+        except Exception as e:
+            logging.warning(f"⚠️ JSON decode error: {e}")
+            return jsonify({"error": "Invalid JSON body"}), 400
+
+        if not data:
+            return jsonify({"error": "Missing JSON body"}), 400
+
         user_id = data.get("user_id", "").strip()
         password = data.get("password", "").strip()
 
