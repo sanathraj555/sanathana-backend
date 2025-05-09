@@ -17,36 +17,6 @@ def fetch_one(query, params):
     conn.close()
     return result
 
-# ✅ Verify EMP ID
-@auth_bp.route("/verify-empid", methods=["POST"])
-def verify_empid():
-    try:
-        # Log raw payload
-        raw = request.get_data(as_text=True)
-        logging.info(f"📦 Raw request payload: {raw}")
-
-        # Parse JSON
-        data = request.get_json(force=True)
-        if not data or "user_id" not in data:
-            logging.error("🔴 EMP ID missing in JSON body")
-            return jsonify({"error": "Missing EMP ID"}), 400
-
-        user_id = data.get("user_id", "").strip()
-        if not user_id:
-            logging.error("🔴 EMP ID value is empty")
-            return jsonify({"error": "Empty EMP ID"}), 400
-
-        # DB lookup
-        result = fetch_one("SELECT emp_id FROM employee_details WHERE emp_id = %s", (user_id,))
-        is_valid = result is not None
-        logging.info(f"✅ EMP ID exists: {is_valid}")
-
-        return jsonify({"valid": is_valid}), 200
-
-    except Exception as e:
-        logging.exception("❌ Exception occurred in verify_empid:")
-        return jsonify({"error": "Internal server error"}), 500
-
 # ✅ Signup
 @auth_bp.route("/signup", methods=["POST"])
 def signup():
