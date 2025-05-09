@@ -11,12 +11,9 @@ app = Flask(__name__, static_folder="frontend/build", static_url_path="")
 logging.basicConfig(level=logging.INFO)
 app.logger.info("🚀 Starting Flask App")
 
-# === CORS Config ===
 CORS(app, supports_credentials=True, origins=[
-    os.getenv("FRONTEND_URL", "http://localhost:3000"),
     "https://yellow-hill-0dae7d700.6.azurestaticapps.net"
 ])
-
 # === MongoDB Setup (Azure CosmosDB with Mongo API) ===
 cosmos_uri = os.getenv("MONGO_URI", "mongodb://sanathana-mongodb:dfoQCX7oTznqVCzevEviz22giZEgbHpoF04YOXOTTMMuOOUCIcbqMzBSvBrCNNHJafuW7FqSHjRhACDbwmAgPw==@sanathana-mongodb.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@sanathana-mongodb@")
 
