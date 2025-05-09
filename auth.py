@@ -21,37 +21,37 @@ def fetch_one(query, params):
 @auth_bp.route("/signup", methods=["POST"])
 def signup():
     try:
-        # Log raw body for debugging
+        # Log raw request body
         raw = request.get_data(as_text=True)
         logging.info(f"📦 RAW SIGNUP PAYLOAD: {raw}")
 
-        try:
-            data = request.get_json(force=True)
-        except Exception as e:
-            logging.warning(f"⚠️ JSON decode error: {e}")
-            return jsonify({"error": "Invalid JSON body"}), 400
+        # Parse JSON
+        data = request.get_json(force=True)
+        if not data or 'user_id' not in data or 'password' not in data:
+            return jsonify({"error": "Missing user_id or password"}), 400
 
-        if not data:
-            return jsonify({"error": "Missing JSON body"}), 400
-
-        user_id = data.get("user_id", "").strip()
-        password = data.get("password", "").strip()
+        user_id = data['user_id'].strip()
+        password = data['password'].strip()
 
         if not user_id or not password:
             return jsonify({"error": "Missing user_id or password"}), 400
 
-        # Check if EMP ID is valid
+        # 🔍 Check if EMP ID is valid
         emp_check = fetch_one("SELECT emp_id FROM employee_details WHERE emp_id = %s", (user_id,))
         if not emp_check:
+            logging.warning(f"🚫 Invalid EMP ID: {user_id}")
             return jsonify({"error": "Invalid EMP ID"}), 403
 
-        # Check if user already exists
+        # 🛑 Check if user already signed up
         user_check = fetch_one("SELECT user_id FROM users WHERE user_id = %s", (user_id,))
         if user_check:
+            logging.warning(f"⚠️ User ID already exists: {user_id}")
             return jsonify({"error": "User ID already exists"}), 409
 
-        # Hash password and insert
+        # 🔐 Hash the password
         hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+        # ✅ Insert into users table
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("INSERT INTO users (user_id, password) VALUES (%s, %s)", (user_id, hashed))
