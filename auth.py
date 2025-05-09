@@ -7,7 +7,7 @@ from db import get_db_connection
 auth_bp = Blueprint("auth", __name__)
 logging.basicConfig(level=logging.INFO)
 
-# Helper to fetch single row
+# 🔁 Helper: fetch one row from DB
 def fetch_one(query, params):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -21,41 +21,31 @@ def fetch_one(query, params):
 @auth_bp.route("/verify-empid", methods=["POST"])
 def verify_empid():
     try:
-        # Log raw request data to see exactly what's coming in
+        # Log raw payload
         raw = request.get_data(as_text=True)
         logging.info(f"📦 Raw request payload: {raw}")
 
-        # Try decoding JSON body
-        try:
-            data = request.get_json(force=True)
-        except Exception as e:
-            logging.error(f"❌ JSON decoding failed: {e}")
-            return jsonify({"error": "Invalid JSON format"}), 400
-
-        if not data:
-            logging.error("🔴 No JSON body received")
-            return jsonify({"error": "Missing JSON body"}), 400
+        # Parse JSON
+        data = request.get_json(force=True)
+        if not data or "user_id" not in data:
+            logging.error("🔴 EMP ID missing in JSON body")
+            return jsonify({"error": "Missing EMP ID"}), 400
 
         user_id = data.get("user_id", "").strip()
         if not user_id:
-            logging.error("🔴 EMP ID missing or empty")
-            return jsonify({"error": "Missing EMP ID"}), 400
+            logging.error("🔴 EMP ID value is empty")
+            return jsonify({"error": "Empty EMP ID"}), 400
 
-        logging.info(f"🔍 Validating EMP ID: {user_id}")
-        result = fetch_one(
-            "SELECT COUNT(*) AS emp_exists FROM employee_details WHERE emp_id = %s",
-            (user_id,)
-        )
-
-        is_valid = result and result["emp_exists"] == 1
+        # DB lookup
+        result = fetch_one("SELECT emp_id FROM employee_details WHERE emp_id = %s", (user_id,))
+        is_valid = result is not None
         logging.info(f"✅ EMP ID exists: {is_valid}")
+
         return jsonify({"valid": is_valid}), 200
 
     except Exception as e:
         logging.exception("❌ Exception occurred in verify_empid:")
         return jsonify({"error": "Internal server error"}), 500
-
-
 
 # ✅ Signup
 @auth_bp.route("/signup", methods=["POST"])
@@ -69,16 +59,16 @@ def signup():
             return jsonify({"error": "Missing user_id or password"}), 400
 
         # Check if EMP ID is valid
-        emp_check = fetch_one("SELECT COUNT(*) AS emp_exists FROM employee_details WHERE emp_id = %s", (user_id,))
-        if emp_check["emp_exists"] == 0:
+        emp_check = fetch_one("SELECT emp_id FROM employee_details WHERE emp_id = %s", (user_id,))
+        if not emp_check:
             return jsonify({"error": "Invalid EMP ID"}), 403
 
         # Check if user already exists
-        user_check = fetch_one("SELECT COUNT(*) AS user_count FROM users WHERE user_id = %s", (user_id,))
-        if user_check["user_count"] > 0:
+        user_check = fetch_one("SELECT user_id FROM users WHERE user_id = %s", (user_id,))
+        if user_check:
             return jsonify({"error": "User ID already exists"}), 409
 
-        # Hash and insert
+        # Hash password and insert
         hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -91,7 +81,7 @@ def signup():
         return jsonify({"message": "Signup successful!"}), 201
 
     except Exception as e:
-        logging.error(f"❌ Signup error: {e}")
+        logging.exception("❌ Signup error:")
         return jsonify({"error": "Internal server error"}), 500
 
 # ✅ Login
@@ -109,8 +99,9 @@ def login():
         if not user or not bcrypt.checkpw(password.encode(), user["password"].encode()):
             return jsonify({"error": "Invalid credentials"}), 401
 
+        logging.info(f"✅ Login successful for user: {user_id}")
         return jsonify({"message": "Login successful!"}), 200
 
     except Exception as e:
-        logging.error(f"❌ Login error: {e}")
+        logging.exception("❌ Login error:")
         return jsonify({"error": "Internal server error"}), 500
