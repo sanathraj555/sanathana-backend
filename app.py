@@ -3,22 +3,20 @@ from flask_cors import CORS
 import os
 import logging
 from pymongo import MongoClient
-# === Register Chatbot Blueprint ===
-from chatbot import chatbot_bp
-app.register_blueprint(chatbot_bp, url_prefix="/chatbot")
 
-
-# === Flask App Config ===
+# === Initialize Flask App ===
 app = Flask(__name__, static_folder="frontend/build", static_url_path="")
 
 # === Logging Setup ===
 logging.basicConfig(level=logging.INFO)
 app.logger.info("🚀 Starting Flask App")
 
+# === Enable CORS ===
 CORS(app, supports_credentials=True, origins=[
     "https://yellow-hill-0dae7d700.6.azurestaticapps.net"
 ])
-# === MongoDB Setup (Azure CosmosDB with Mongo API) ===
+
+# === MongoDB (CosmosDB) Setup ===
 cosmos_uri = os.getenv("MONGO_URI", "mongodb://sanathana-mongodb:dfoQCX7oTznqVCzevEviz22giZEgbHpoF04YOXOTTMMuOOUCIcbqMzBSvBrCNNHJafuW7FqSHjRhACDbwmAgPw==@sanathana-mongodb.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@sanathana-mongodb@")
 
 try:
@@ -30,7 +28,8 @@ except Exception as e:
     app.logger.error(f"❌ MongoDB connection failed: {e}")
     app.mongo_chatbot = None
 
-# === Register Chatbot Blueprint ===
+# ✅ Now import the chatbot blueprint AFTER app is defined
+from chatbot import chatbot_bp
 app.register_blueprint(chatbot_bp, url_prefix="/chatbot")
 
 # === Health Check ===
@@ -38,7 +37,7 @@ app.register_blueprint(chatbot_bp, url_prefix="/chatbot")
 def health_check():
     return jsonify({"status": "healthy"}), 200
 
-# === Debug: Mongo Status ===
+# === Debug: MongoDB Connection Check ===
 @app.route("/debug/mongo", methods=["GET"])
 def debug_mongo():
     try:
@@ -49,7 +48,7 @@ def debug_mongo():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# === Debug: Seed Sample Data ===
+# === Debug: Insert Sample Data ===
 @app.route("/debug/seed", methods=["POST"])
 def seed_sections():
     try:
@@ -68,12 +67,12 @@ def seed_sections():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# === Serve React Static Files ===
+# === Serve Static React Files ===
 @app.route("/static/<path:filename>")
 def serve_static(filename):
     return send_from_directory(os.path.join(app.static_folder, "static"), filename)
 
-# === Catch-all Route (React SPA fallback) ===
+# === React SPA Catch-All ===
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def serve_react_app(path):
@@ -81,7 +80,7 @@ def serve_react_app(path):
         return jsonify({"error": "API route not found"}), 404
     return send_from_directory(app.static_folder, "index.html")
 
-# === Run Server ===
+# === Start Server ===
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
