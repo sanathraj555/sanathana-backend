@@ -3,6 +3,10 @@ from flask_cors import CORS
 import os
 import logging
 from pymongo import MongoClient
+# === Register Chatbot Blueprint ===
+from chatbot import chatbot_bp
+app.register_blueprint(chatbot_bp, url_prefix="/chatbot")
+
 
 # === Flask App Config ===
 app = Flask(__name__, static_folder="frontend/build", static_url_path="")
@@ -27,7 +31,6 @@ except Exception as e:
     app.mongo_chatbot = None
 
 # === Register Chatbot Blueprint ===
-from chatbot import chatbot_bp
 app.register_blueprint(chatbot_bp, url_prefix="/chatbot")
 
 # === Health Check ===
