@@ -10,7 +10,7 @@ chatbot_bp = Blueprint("chatbot", __name__, url_prefix="/chatbot")
 # === MongoDB Access Helper ===
 def get_sections_collection():
     db = current_app.mongo_chatbot
-    if not db:
+    if db is None:  # ✅ Corrected check (do NOT use "if not db")
         logging.error("❌ MongoDB is not connected through app context.")
         raise Exception("MongoDB not connected.")
     return db["sections"]
