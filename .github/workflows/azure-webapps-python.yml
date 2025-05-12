@@ -1,7 +1,7 @@
 name: Build and Deploy Python App to Azure Web App
 
 env:
-  AZURE_WEBAPP_NAME: sanathana-backend
+  AZURE_WEBAPP_NAME: sanathana-server
   PYTHON_VERSION: '3.10'
 
 on:
