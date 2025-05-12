@@ -1,4 +1,5 @@
 import logging
+import traceback
 from flask import Blueprint, request, jsonify, current_app
 
 # === Initialize Chatbot Blueprint ===
@@ -21,7 +22,9 @@ def get_sections():
     try:
         db = get_mongo_chatbot()
         coll = db["sections"]
-        cursor = coll.find({}, {"_id": 0, "section_name": 1})
+
+        # Convert cursor to list explicitly for CosmosDB compatibility
+        cursor = list(coll.find({}, {"section_name": 1}))
         sections = [doc.get("section_name", "Unnamed") for doc in cursor]
 
         if not sections:
@@ -30,8 +33,8 @@ def get_sections():
         logging.info(f"✅ Sections fetched: {sections}")
         return jsonify({"sections": sections}), 200
 
-    except Exception as e:
-        logging.exception("❌ Failed to fetch sections")
+    except Exception:
+        logging.error("❌ Failed to fetch sections:\n%s", traceback.format_exc())
         return jsonify({"error": "Failed to fetch sections"}), 500
 
 # === Route: Get Sub-sections and/or Questions ===
@@ -45,18 +48,18 @@ def get_section_questions():
         db = get_mongo_chatbot()
         coll = db["sections"]
 
-        # Direct match
+        # Step 1: Direct section match
         section = coll.find_one({"section_name": section_name})
         if section:
             sub_sections = section.get("sub_sections", [])
             questions = section.get("questions", [])
-            logging.info(f"📁 Section '{section_name}' found directly.")
+            logging.info(f"📁 Direct section '{section_name}' found.")
             return jsonify({
-                "sub_sections": [s["sub_section_name"] for s in sub_sections],
+                "sub_sections": [s.get("sub_section_name", "Unnamed") for s in sub_sections],
                 "questions": questions
             }), 200
 
-        # Recursive search in sub-sections
+        # Step 2: Nested sub-section search
         def search_nested(subs):
             for sub in subs:
                 if sub.get("sub_section_name") == section_name:
@@ -67,12 +70,12 @@ def get_section_questions():
                     return result
             return None
 
-        for doc in coll.find({}, {"sub_sections": 1, "_id": 0}):
+        for doc in coll.find({}, {"sub_sections": 1}):
             found = search_nested(doc.get("sub_sections", []))
             if found:
-                logging.info(f"📂 Section '{section_name}' found nested.")
+                logging.info(f"📂 Nested sub-section '{section_name}' found.")
                 return jsonify({
-                    "sub_sections": [s["sub_section_name"] for s in found.get("sub_sections", [])],
+                    "sub_sections": [s.get("sub_section_name", "Unnamed") for s in found.get("sub_sections", [])],
                     "questions": found.get("questions", [])
                 }), 200
 
@@ -80,7 +83,7 @@ def get_section_questions():
         return jsonify({"sub_sections": [], "questions": []}), 200
 
     except Exception:
-        logging.exception("❌ Error in section-questions")
+        logging.error("❌ Error in section-questions:\n%s", traceback.format_exc())
         return jsonify({"error": "Failed to fetch section questions"}), 500
 
 # === Route: Get Answer to a Question ===
@@ -99,25 +102,22 @@ def chat_response():
 
         def find_answer(questions):
             for q in questions:
-                if q["question"].strip().lower() == message:
-                    return q["answer"]
+                if q.get("question", "").strip().lower() == message:
+                    return q.get("answer", None)
             return None
 
-        # Direct section match
+        # Step 1: Direct section match
         section = coll.find_one({"section_name": section_name})
         if section:
-            # Check top-level questions
             answer = find_answer(section.get("questions", []))
             if answer:
                 return jsonify({"response": answer}), 200
 
-            # Check direct sub-sections
             for sub in section.get("sub_sections", []):
                 answer = find_answer(sub.get("questions", []))
                 if answer:
                     return jsonify({"response": answer}), 200
 
-            # Deep recursive search
             def recursive_search(subs):
                 for sub in subs:
                     answer = find_answer(sub.get("questions", []))
@@ -137,5 +137,5 @@ def chat_response():
         return jsonify({"response": "Sorry, I don't have an answer for that."}), 200
 
     except Exception:
-        logging.exception("❌ Error in chat-response")
+        logging.error("❌ Error in chat-response:\n%s", traceback.format_exc())
         return jsonify({"error": "Failed to fetch response"}), 500
