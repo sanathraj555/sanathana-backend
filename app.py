@@ -5,40 +5,40 @@ import os
 import logging
 from dotenv import load_dotenv
 
+# === Import Blueprints ===
+from chatbot import chatbot_bp
+from auth import auth_bp
+
 # === Load environment variables from .env ===
 load_dotenv()
 
 # === Initialize Flask App ===
-app = Flask(__name__, static_folder='frontend/build', static_url_path='')
+app = Flask(__name__, static_folder="frontend/build", static_url_path="")
 
-# === Logging Setup ===
-logging.basicConfig(level=logging.INFO)
+# === Enable CORS (Frontend origin from Azure Static Web App) ===
+CORS(app, resources={r"/*": {
+    "origins": [os.getenv("FRONTEND_ORIGIN", "https://yellow-hill-0dae7d700.6.azurestaticapps.net")]
+}}, supports_credentials=True)
 
-# === CORS Configuration ===
-CORS(app, supports_credentials=True, origins=[
-    "http://localhost:3000",
-    "https://yellow-hill-0dae7d700.6.azurestaticapps.net"
-])
+# === MongoDB URI from Environment Variable ===
+mongo_uri = os.getenv("MONGO_URI")
+if not mongo_uri:
+    raise RuntimeError("❌ MONGO_URI environment variable is missing. Set it in Azure App Service → Configuration.")
 
 # === MongoDB Setup (local or Azure CosmosDB) ===
-# === MongoDB Setup (local or Azure CosmosDB) ===
-mongo_uri = os.getenv('MONGO_URI')
-
 try:
-    client = MongoClient(mongo_uri)  # ✅ No TLS params for local
+    client = MongoClient(mongo_uri)
     client.admin.command("ping")     # Test connection
-    app.mongo_chatbot = client["sanathana_chatbot_v1"]
+    db = client.get_database("sanathana_chatbot_v1")
+    app.mongo_chatbot = db
     app.logger.info("✅ Connected to MongoDB: sanathana_chatbot_v1")
 except Exception as e:
-    app.logger.error(f"❌ MongoDB connection failed: {e}")
+    print(f"❌ MongoDB connection failed: {e}")
     app.mongo_chatbot = None
 
 # === Register Blueprints ===
-from auth import auth_bp
-from chatbot import chatbot_bp
-
-app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(chatbot_bp, url_prefix="/chatbot")
+app.register_blueprint(auth_bp, url_prefix="/auth")
 
 # === Health Check Route ===
 @app.route('/health', methods=["GET"])
@@ -48,15 +48,16 @@ def health_check():
 # === Serve Static Files (React build) ===
 @app.route('/static/<path:filename>')
 def serve_static(filename):
-    return send_from_directory(os.path.join(app.static_folder, 'static'), filename)
+    return send_from_directory(os.path.join(app.static_folder, "static"), filename)
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
+# === Catch-all for SPA routes (React frontend) ===
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
 def serve_react_app(path):
     # Prevent intercepting API routes
     if path.startswith(("auth", "chatbot", "api")):
         return jsonify({"error": "API route not found"}), 404
-    return send_from_directory(app.static_folder, 'index.html')
+    return send_from_directory(app.static_folder, "index.html")
 
 # === Run Server ===
 if __name__ == "__main__":
