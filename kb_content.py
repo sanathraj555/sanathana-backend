@@ -41,103 +41,75 @@ Leave will not be granted if the employee:
 
   Has pending disciplinary actions
 
-CALCULATION OF LEAVE:
-  Leave is credited on a pro-rata basis as of January 1st each year.
+Calculation of Leave (All Types) :
 
-  Leave entitlements are calculated based on the calendar year (January 1st to December 31st).
+  Leave credits are calculated on a pro-rata basis as of January 1 each year.
 
-CASUAL LEAVE (CL):
-  Purpose: For unforeseen or exceptional short-term absences.
+  Entitlements apply for the calendar year (January 1 to December 31).
 
-  Eligibility:
+Casual Leave (CL) :
 
-  Maximum 12 days per year.
+  Casual Leave is intended for unforeseen or exceptional short-term absences.
 
-  Pro-rata calculation applies for employees who join mid-year.
+  Employees are entitled to a maximum of 12 days of Casual Leave per year, prorated if they join mid-year.
 
-  Lapse: Unused CL will not carry forward and will automatically lapse.
+  Unused Casual Leave does not carry forward and will automatically lapse at year-end.
 
-  Grant: Maximum 3 days can be availed at a time.
+  An employee may avail up to 3 consecutive days of Casual Leave at a time.
 
-  Wages: Employees on CL are entitled to receive wages.
+  Wages continue to be paid during Casual Leave.
 
-  Leave Approval Process for Casual Leave:
+  To request Casual Leave, address the application to the Team Lead and HR, with CC to the Department Head, Manager, Head TL, Sahithi, Shiva Boga, Rakesh, and Soujanya.
+
+Sick Leave (SL) :
+
+  Employees are eligible for up to 12 days of Sick Leave per year, prorated from their date of joining.
+
+  Any unused Sick Leave lapses at the end of the calendar year and cannot be carried forward.
+
+  Encashment of Sick Leave is not permitted under any circumstances.
+
+  A medical certificate from a practicing MBBS doctor is required if Sick Leave exceeds two consecutive days.
+
+  To apply for Sick Leave, submit the request to the Team Lead and HR, with CC to the Department Head, Manager, Head TL, Sahithi, Shiva Boga, Rakesh, and Soujanya.
+
+Marriage Leave (MAL) :
+
+  Marriage Leave is granted for 15 days once an employee has completed one year of continuous service.
+
+  The 15-day Marriage Leave credit is granted each January 1 and requires at least six months of service prior to entitlement.
+
+  Employees must submit their Marriage Leave request to their Head of Department at least 15 days before the intended leave start date.
+
+  If an extension of Marriage Leave is required, the request must be made to the immediate superior before the initial leave period ends.
+
+  A minimum of 15 days’ advance notice is mandatory for all Marriage Leave applications.
+
+  To process Marriage Leave, address the application to the Team Lead and HR, with CC to the Department Head, Manager, Head TL, Sahithi, Shiva Boga, Rakesh, and Soujanya.
+
+Paternity Leave :
+
+  Paternity Leave is provided to fathers to support their partner during childbirth and to foster bonding with the newborn.
+
+  Employees must inform the company at least one week in advance of the intended Paternity Leave start date.
+
+  To request Paternity Leave, submit the application to the Team Lead and HR, with CC to the Department Head, Manager, Head TL, Sahithi, Shiva Boga, Rakesh, and Soujanya.
+
+Maternity Leave (ML) :
+
+  Female employees are entitled to up to three months (90 days) of Maternity Leave, which may be taken before or after the expected delivery date.
+
+  Applications for Maternity Leave must be submitted in advance, with valid proof of pregnancy.
+
+  Employees must notify the company at least one month prior to the anticipated start date of Maternity Leave.
+
+  To apply for Maternity Leave, address the request to the Team Lead and HR, with CC to the Department Head, Manager, Head TL, Sahithi, Shiva Boga, Rakesh, and Soujanya.
+
+Leave Approval Contacts (All Leave Types):
+
   To: Team Lead, HR
 
-  Cc: Department Head, Manager, Head TL, Sahithi, Shiva Boga, Rakesh, Soujanya
-
-SICK LEAVE (SL):
-  Eligibility:
-
-  Maximum 12 days per year, or pro-rata from date of joining.
-
-  Accumulation:
-
-  Unused SL will lapse at year-end.
-
-  Encashment of SL is not allowed.
-
-  Medical Certificate:
-
-  Required if SL exceeds 2 days.
-
-  Must be from a currently practicing MBBS doctor.
-
-  Leave Approval Process for Sick Leave (SL):
-  To: Team Lead, HR
-
-  Cc: Department Head, Manager, Head TL, Sahithi, Shiva Boga, Rakesh, Soujanya
-
-MARRIAGE LEAVE (MAL) :
-  Quantum: 15 days of MAL after 1 year of continuous service.
-
-  Credit:
-
-  Credited on January 1st each year.
-
-  Must have completed at least 6 months of service.
-
-  Application:
-
-  Request must be submitted to HOD at least 15 days prior to the leave.
-
-  Extension:
-
-  Extension request must be submitted to the immediate superior before current MAL ends.
-
-  Advance Notice: Employees must notify at least 15 days in advance.
-
-  Marriage Leave (MAL) Approval Process:
-  To: Team Lead, HR
-
-  Cc: Department Head, Manager, Head TL, Sahithi, Shiva Boga, Rakesh, Soujanya
-
-
-PATERNITY LEAVE:
-  Purpose: Granted to fathers to support their partner during childbirth and foster bonding with the newborn.
-
-  Advance Notice: Employees must inform the company at least one week in advance before availing paternity leave.
-
-  Leave Approval Process for Paternity Leave:
-  To: Team Lead, HR
-
-  Cc: Department Head, Manager, Head TL, Sahithi, Shiva Boga, Rakesh, Soujanya
-
-MATERNITY LEAVE (ML):
-  Eligibility: Female employees are entitled to up to 3 months of maternity leave, which can be taken before or after delivery.
-
-  Application:
-
-  Leave must be applied in advance.
-
-  Application must include valid proof of pregnancy.
-
-  Must be informed at least one month before the expected leave date.
-
-  Leave Approval Process for Maternity Leave:
-  To: Team Lead, HR
-
-  Cc: Department Head, Manager, Head TL, Sahithi, Shiva Boga, Rakesh, Soujanya
+  CC: Department Head, Manager, Head TL, Sahithi, Shiva Boga, Rakesh, Soujanya
 
 AVAILING HALF-DAY LEAVE :
   Employees may avail Casual Leave (CL) or Sick Leave (SL) for half a day.
@@ -501,76 +473,76 @@ Quarter 4 CSR Initiatives (October – December)
 
 SANATHANA ANALYTICS & RECRUITMENT SERVICES EMPLOYEE DETAILS LIKE EMPLOYEE ID,EMPLOYEE NAME, DATE OF BIRTH ,AND DATE OF JOINING:
 
-      1.	Employee ID: H2H005	,EMPLOYEE NAME : Modhampuri Vinod kumar	DATE OF BIRTH: 01-01-1988	,DATE OF JOINING : 01.02.2017
-      2.  Employee ID: SARS005, EMPLOYEE NAME :	Illa Teja Saish	,DATE OF BIRTH: 24-08-1993, DATE OF JOINING : 01.06.2017
-      3.	Employee ID:SARS007,	EMPLOYEE NAME :Boga Shiva Kumar,DATE OF BIRTH:	09-06-1979, DATE OF JOINING :	05.10.2017
-      4.	Employee ID:H2H010, EMPLOYEE NAME :	Byri Rajender.	,DATE OF BIRTH: 10-10-1986	, DATE OF JOINING : 24.10.2017
-      5.  Employee ID:SARS012,EMPLOYEE NAME: Kotte Lavanya,	DATE OF BIRTH: 12-08-1992	, DATE OF JOINING :24.01.2018
-      6.  Employee ID: SARS021, EMPLOYEE NAME: SK Parveen, DATE OF BIRTH: 12-06-1985, DATE OF JOINING : 21.05.2018  
-      7.  Employee ID: H2H009, EMPLOYEE NAME: Kadivendi Lalith kumar, DATE OF BIRTH: 14-04-1990, DATE OF JOINING : 23.08.2018  
-      8.  Employee ID: SARS044, EMPLOYEE NAME: SK Gousia, DATE OF BIRTH: 01-01-1990, DATE OF JOINING : 05.03.2019  
-      9.  Employee ID: SARS045, EMPLOYEE NAME: Ananthula Anusha, DATE OF BIRTH: 19-05-1988, DATE OF JOINING : 01.04.2019  
-      10. Employee ID: SARS052, EMPLOYEE NAME: Sandarkari Rajshekari, DATE OF BIRTH: 25-06-1995, DATE OF JOINING : 24.06.2019  
-      11. Employee ID: SARS033, EMPLOYEE NAME: Chandanagiri Jagdesh, DATE OF BIRTH: 19-06-1995, DATE OF JOINING : 01.07.2020  
-      12. Employee ID: SARS026, EMPLOYEE NAME: Ponnala Surya kumar, DATE OF BIRTH: 09-06-1998, DATE OF JOINING : 29.04.2021  
-      13. Employee ID: SARS058, EMPLOYEE NAME: Abdul Aleem, DATE OF BIRTH: 08-03-1991, DATE OF JOINING : 05.07.2021  
-      14. Employee ID: SARS061, EMPLOYEE NAME: Ailla Akanksha, DATE OF BIRTH: 20-05-1999, DATE OF JOINING : 26.08.2021  
-      15. Employee ID: H2H015, EMPLOYEE NAME: Mekala Jeevan Dattu, DATE OF BIRTH: 14-11-1999, DATE OF JOINING : 30.08.2021  
-      16. Employee ID: SARS063, EMPLOYEE NAME: Koyalkar Sravani, DATE OF BIRTH: 24-03-1998, DATE OF JOINING : 30.08.2021  
-      17. Employee ID: H2H011, EMPLOYEE NAME: Vijjigiri Indu, DATE OF BIRTH: 09-09-2000, DATE OF JOINING : 17.09.2021  
-      18. Employee ID: H2H012, EMPLOYEE NAME: Kasipeta Nuthan Sarkar, DATE OF BIRTH: 18-05-1989, DATE OF JOINING : 21.10.2021  
-      19. Employee ID: SARS069, EMPLOYEE NAME: Swarna Amruth Raj, DATE OF BIRTH: 05-01-1987, DATE OF JOINING : 11.11.2021  
-      20. Employee ID: H2H021, EMPLOYEE NAME: Swarna Vijaya Laxmi, DATE OF BIRTH: 03-10-1996, DATE OF JOINING : 11.11.2021  
-      21. Employee ID: H2H013, EMPLOYEE NAME: Sheela Rani Nag, DATE OF BIRTH: 26-07-1993, DATE OF JOINING : 03.01.2022  
-      22. Employee ID: SARS072, EMPLOYEE NAME: Nulagonda Srikar, DATE OF BIRTH: 28-12-1882, DATE OF JOINING : 06.01.2022  
-      23. Employee ID: H2H014, EMPLOYEE NAME: Mathamari Lathika, DATE OF BIRTH: 22-04-1987, DATE OF JOINING : 11.04.2022  
-      24. Employee ID: H2H019, EMPLOYEE NAME: Keerthi Sai Mahendar, DATE OF BIRTH: 01-11-2022, DATE OF JOINING : 01.06.2022  
-      25. Employee ID: SARS077, EMPLOYEE NAME: Revelli Saikumar, DATE OF BIRTH: 24-01-1995, DATE OF JOINING : 01.06.2022  
-      26. Employee ID: H2H016, EMPLOYEE NAME: Deeshetti Vamshi, DATE OF BIRTH: 14-12-1999, DATE OF JOINING : 01.06.2022  
-      27. Employee ID: H2H017, EMPLOYEE NAME: Naspuri Sangeetha, DATE OF BIRTH: 01-12-1994, DATE OF JOINING : 01.06.2022  
-      28. Employee ID: SARS082, EMPLOYEE NAME: Velpula Rakesh, DATE OF BIRTH: 13-07-1997, DATE OF JOINING : 10.10.2022  
-      29. Employee ID: SARS087, EMPLOYEE NAME: Abboju Phaneendra, DATE OF BIRTH: 20-07-2002, DATE OF JOINING : 15.02.2023  
-      30. Employee ID: SARSO89, EMPLOYEE NAME: Kosana Naga Sai Pavan, DATE OF BIRTH: 29-02-2000, DATE OF JOINING : 04.03.2023  
-      31. Employee ID: SARS093, EMPLOYEE NAME: Kurre Prashanth, DATE OF BIRTH: 06-04-1999, DATE OF JOINING : 14.08.2023  
-      32. Employee ID: SARS097, EMPLOYEE NAME: Gorantla Sidhartha Sai, DATE OF BIRTH: 13-11-1997, DATE OF JOINING : 05.02.2024  
-      33. Employee ID: H2H025, EMPLOYEE NAME: Thani Swetha, DATE OF BIRTH: 16-08-2000, DATE OF JOINING : 21.02.2024  
-      34. Employee ID: H2H026, EMPLOYEE NAME: Thani Prathyusha, DATE OF BIRTH: 26-03-1999, DATE OF JOINING : 26.02.2024  
-      35. Employee ID: SARS129, EMPLOYEE NAME: M Anvesh, DATE OF BIRTH: 01-01-1963, DATE OF JOINING : 12.03.2024  
-      36. Employee ID: SARS103, EMPLOYEE NAME: Pallepati Soujanya, DATE OF BIRTH: 12-05-1995, DATE OF JOINING : 18.03.2024  
-      37. Employee ID: H2H028, EMPLOYEE NAME: Pabba Sairaj, DATE OF BIRTH: 14-12-2000, DATE OF JOINING : 15.04.2024  
-      38. Employee ID: SARS105, EMPLOYEE NAME: Katukuri Manish, DATE OF BIRTH: 26-10-2000, DATE OF JOINING : 03.05.2024  
-      39. Employee ID: SARS104, EMPLOYEE NAME: Meesaraganda Sanath kumar Raju, DATE OF BIRTH: 17-02-1999, DATE OF JOINING : 03.05.2024  
-      40. Employee ID: SARS107, EMPLOYEE NAME: Kalety Sandeep kumar, DATE OF BIRTH: 01-11-1987, DATE OF JOINING : 20.05.2024  
-      41. Employee ID: SARS112, EMPLOYEE NAME: SK Sameena, DATE OF BIRTH: 23-06-1988, DATE OF JOINING : 06.06.2024  
-      42. Employee ID: H2H030, EMPLOYEE NAME: Adigoppula Rajkumarr, DATE OF BIRTH: 25-05-1988, DATE OF JOINING : 24.06.2024  
-      43. Employee ID: SARS114, EMPLOYEE NAME: Punnuloori Manogna, DATE OF BIRTH: 13-09-2004, DATE OF JOINING : 01.07.2024  
-      44. Employee ID: H2H032, EMPLOYEE NAME: Ilaveni Vaishnavi, DATE OF BIRTH: 05-08-2001, DATE OF JOINING : 10.07.2024  
-      45. Employee ID: SARS115, EMPLOYEE NAME: K Vinay kumar, DATE OF BIRTH: 07-08-1996, DATE OF JOINING : 01.08.2024  
-      46. Employee ID: H2H034, EMPLOYEE NAME: Nazma, DATE OF BIRTH: 15-12-2003, DATE OF JOINING : 12.08.2024  
-      47. Employee ID: H2H033, EMPLOYEE NAME: Bandari Saikumar, DATE OF BIRTH: 17-04-2000, DATE OF JOINING : 12.08.2024  
-      48. Employee ID: H2H032, EMPLOYEE NAME: Sammeta Shiva kumar, DATE OF BIRTH: 19-08-1991, DATE OF JOINING : 03.09.2024  
-      49. Employee ID: SARS119, EMPLOYEE NAME: Ippa Anjaneya prasad, DATE OF BIRTH: 18-03-2007, DATE OF JOINING : 09.10.2024  
-      50. Employee ID: SARS118, EMPLOYEE NAME: Illa Manikanta, DATE OF BIRTH: 01-04-2000, DATE OF JOINING : 18.11.2024  
-      51. Employee ID: SARS120, EMPLOYEE NAME: Peguda Rajini, DATE OF BIRTH: 02-10-1988, DATE OF JOINING : 02.12.2024  
-      52. Employee ID: SARS122, EMPLOYEE NAME: Patnam Prashanth, DATE OF BIRTH: 14-08-2002, DATE OF JOINING : 11.02.2025  
-      53. Employee ID: SARS121, EMPLOYEE NAME: Raparthi Ajay, DATE OF BIRTH: 25-06-1998, DATE OF JOINING : 17.02.2025  
-      54. Employee ID: SARS126, EMPLOYEE NAME: Manthena Shiva, DATE OF BIRTH: 04-06-1995, DATE OF JOINING : 10.03.2025  
-      55. Employee ID: SARS124, EMPLOYEE NAME: Gaddam Prathyusha, DATE OF BIRTH: 15-03-2004, DATE OF JOINING : 10.03.2025  
-      56. Employee ID: SARS128, EMPLOYEE NAME: Katukuri Ramesh, DATE OF BIRTH: 01-01-1963, DATE OF JOINING : 10-03-2025
-      57. Employee ID: SARS127, EMPLOYEE NAME: Janjirala Anudeep, DATE OF BIRTH: 14-08-1993, DATE OF JOINING : 12-03-2025
-      58. Employee ID: SARS080, EMPLOYEE NAME: Naspoori Padma, DATE OF BIRTH: 11-10-1996, DATE OF JOINING : 01-06-2022
-      59. Employee ID: SARS0078, EMPLOYEE NAME: Sagarla Saikiran, DATE OF BIRTH: 22-01-1998, DATE OF JOINING : 01-06-2022
-      60. Employee ID: SARS116, EMPLOYEE NAME: M Bhagya Sri, DATE OF BIRTH: 23-10-2002, DATE OF JOINING : 01-08-2024
-      61. Employee ID: SARS117, EMPLOYEE NAME: K Sathwika, DATE OF BIRTH: 27-10-2004, DATE OF JOINING : 01-08-2024
-      62. Employee ID: SARS120, EMPLOYEE NAME: Vijaya, DATE OF BIRTH: No, DATE OF JOINING : 19-04-2025
-      63. Employee ID: SARS125, EMPLOYEE NAME: Borigama Sai, DATE OF BIRTH: 21-11-2002, DATE OF JOINING : 10-03-2025
-      64. Employee ID: SARS102, EMPLOYEE NAME: Nathagiri Mamatha, DATE OF BIRTH: 05-01-1990, DATE OF JOINING : 18-03-2024
-      65. Employee ID: SARS109, EMPLOYEE NAME: Vengala Anusha, DATE OF BIRTH: 20-05-2023, DATE OF JOINING : 20-05-2025
-      66. Employee ID: SARS110, EMPLOYEE NAME: MD Asharf, DATE OF BIRTH: 19-10-1999, DATE OF JOINING : 20-05-2024
-      67. Employee ID: SARS108, EMPLOYEE NAME: Akudari Ramya, DATE OF BIRTH: 26-12-2001, DATE OF JOINING : 20-05-2024
-      68. Employee ID: SARS100, EMPLOYEE NAME: Dara Roshini, DATE OF BIRTH: 16-11-2002, DATE OF JOINING  : 26-02-2024
-      69. Employee ID: SARS111, EMPLOYEE NAME: Katkojwala Sahithya, DATE OF BIRTH: 01-09-1997, DATE OF JOINING : 03-06-2024
-      70. Employee ID: SARS094, EMPLOYEE NAME: Puloori Ramu, DATE OF BIRTH: 10-07-1989, DATE OF JOINING : 07-09-2023
+      1.	Employee ID: H2H005	,EMPLOYEE NAME : Modhampuri Vinod kumar	DATE OF BIRTH: 01-01-1988	,DATE OF JOINING : 01.02.2017 , Anniversary of the Employee: February 1st
+      2.  Employee ID: SARS005, EMPLOYEE NAME :	Illa Teja Saish	,DATE OF BIRTH: 24-08-1993, DATE OF JOINING : 01.06.2017, Anniversary of the Employee: June 1st
+      3.	Employee ID:SARS007,	EMPLOYEE NAME :Boga Shiva Kumar,DATE OF BIRTH:	09-06-1979, DATE OF JOINING :	05.10.2017, Anniversary of the Employee: October 5th
+      4.	Employee ID:H2H010, EMPLOYEE NAME :	Byri Rajender.	,DATE OF BIRTH: 10-10-1986	, DATE OF JOINING : 24.10.2017, Anniversary of the Employee: October 24th
+      5.  Employee ID:SARS012,EMPLOYEE NAME: Kotte Lavanya,	DATE OF BIRTH: 12-08-1992	, DATE OF JOINING :24.01.2018, Anniversary of the Employee: January 24th
+      6.  Employee ID: SARS021, EMPLOYEE NAME: SK Parveen, DATE OF BIRTH: 12-06-1985, DATE OF JOINING : 21.05.2018 , Anniversary of the Employee: May 21st 
+      7.  Employee ID: H2H009, EMPLOYEE NAME: Kadivendi Lalith kumar, DATE OF BIRTH: 14-04-1990, DATE OF JOINING : 23.08.2018 , Anniversary of the Employee: August 23rd 
+      8.  Employee ID: SARS044, EMPLOYEE NAME: SK Gousia, DATE OF BIRTH: 01-01-1990, DATE OF JOINING : 05.03.2019  , Anniversary of the Employee: March 5th
+      9.  Employee ID: SARS045, EMPLOYEE NAME: Ananthula Anusha, DATE OF BIRTH: 19-05-1988, DATE OF JOINING : 01.04.2019, Anniversary of the Employee: April 1st
+      10. Employee ID: SARS052, EMPLOYEE NAME: Sandarkari Rajshekari, DATE OF BIRTH: 25-06-1995, DATE OF JOINING : 24.06.2019, Anniversary of the Employee: June 24th
+      11. Employee ID: SARS033, EMPLOYEE NAME: Chandanagiri Jagdesh, DATE OF BIRTH: 19-06-1995, DATE OF JOINING : 01.07.2020 , Anniversary of the Employee: July 1st
+      12. Employee ID: SARS026, EMPLOYEE NAME: Ponnala Surya kumar, DATE OF BIRTH: 09-06-1998, DATE OF JOINING : 29.04.2021 , Anniversary of the Employee: April 29th 
+      13. Employee ID: SARS058, EMPLOYEE NAME: Abdul Aleem, DATE OF BIRTH: 08-03-1991, DATE OF JOINING : 05.07.2021, Anniversary of the Employee: July 5th  
+      14. Employee ID: SARS061, EMPLOYEE NAME: Ailla Akanksha, DATE OF BIRTH: 20-05-1999, DATE OF JOINING : 26.08.2021 , Anniversary of the Employee: August 26th 
+      15. Employee ID: H2H015, EMPLOYEE NAME: Mekala Jeevan Dattu, DATE OF BIRTH: 14-11-1999, DATE OF JOINING : 30.08.2021, Anniversary of the Employee: August 30th
+      16. Employee ID: SARS063, EMPLOYEE NAME: Koyalkar Sravani, DATE OF BIRTH: 24-03-1998, DATE OF JOINING : 30.08.2021, Anniversary of the Employee: August 30th  
+      17. Employee ID: H2H011, EMPLOYEE NAME: Vijjigiri Indu, DATE OF BIRTH: 09-09-2000, DATE OF JOINING : 17.09.2021, Anniversary of the Employee: September 17th 
+      18. Employee ID: H2H012, EMPLOYEE NAME: Kasipeta Nuthan Sarkar, DATE OF BIRTH: 18-05-1989, DATE OF JOINING : 21.10.2021 , Anniversary of the Employee: October 21st 
+      19. Employee ID: SARS069, EMPLOYEE NAME: Swarna Amruth Raj, DATE OF BIRTH: 05-01-1987, DATE OF JOINING : 11.11.2021 , Anniversary of the Employee: November 11th 
+      20. Employee ID: H2H021, EMPLOYEE NAME: Swarna Vijaya Laxmi, DATE OF BIRTH: 03-10-1996, DATE OF JOINING : 11.11.2021, Anniversary of the Employee: November 11th 
+      21. Employee ID: H2H013, EMPLOYEE NAME: Sheela Rani Nag, DATE OF BIRTH: 26-07-1993, DATE OF JOINING : 03.01.2022 , Anniversary of the Employee: January 3rd 
+      22. Employee ID: SARS072, EMPLOYEE NAME: Nulagonda Srikar, DATE OF BIRTH: 28-12-1882, DATE OF JOINING : 06.01.2022 , Anniversary of the Employee: January 6th 
+      23. Employee ID: H2H014, EMPLOYEE NAME: Mathamari Lathika, DATE OF BIRTH: 22-04-1987, DATE OF JOINING : 11.04.2022, Anniversary of the Employee: April 11th  
+      24. Employee ID: H2H019, EMPLOYEE NAME: Keerthi Sai Mahendar, DATE OF BIRTH: 01-11-2022, DATE OF JOINING : 01.06.2022 , Anniversary of the Employee: June 1st 
+      25. Employee ID: SARS077, EMPLOYEE NAME: Revelli Saikumar, DATE OF BIRTH: 24-01-1995, DATE OF JOINING : 01.06.2022 , Anniversary of the Employee: June 1st 
+      26. Employee ID: H2H016, EMPLOYEE NAME: Deeshetti Vamshi, DATE OF BIRTH: 14-12-1999, DATE OF JOINING : 01.06.2022 , Anniversary of the Employee: June 1st 
+      27. Employee ID: H2H017, EMPLOYEE NAME: Naspuri Sangeetha, DATE OF BIRTH: 01-12-1994, DATE OF JOINING : 01.06.2022  , Anniversary of the Employee: June 1st
+      28. Employee ID: SARS082, EMPLOYEE NAME: Velpula Rakesh, DATE OF BIRTH: 13-07-1997, DATE OF JOINING : 10.10.2022 , Anniversary of the Employee: October 10th 
+      29. Employee ID: SARS087, EMPLOYEE NAME: Abboju Phaneendra, DATE OF BIRTH: 20-07-2002, DATE OF JOINING : 15.02.2023 , Anniversary of the Employee: February 15th 
+      30. Employee ID: SARSO89, EMPLOYEE NAME: Kosana Naga Sai Pavan, DATE OF BIRTH: 29-02-2000, DATE OF JOINING : 04.03.2023 , Anniversary of the Employee: March 4th 
+      31. Employee ID: SARS093, EMPLOYEE NAME: Kurre Prashanth, DATE OF BIRTH: 06-04-1999, DATE OF JOINING : 14.08.2023  , Anniversary of the Employee: August 14th
+      32. Employee ID: SARS097, EMPLOYEE NAME: Gorantla Sidhartha Sai, DATE OF BIRTH: 13-11-1997, DATE OF JOINING : 05.02.2024  , Anniversary of the Employee: February 5th
+      33. Employee ID: H2H025, EMPLOYEE NAME: Thani Swetha, DATE OF BIRTH: 16-08-2000, DATE OF JOINING : 21.02.2024  , Anniversary of the Employee: February 21st
+      34. Employee ID: H2H026, EMPLOYEE NAME: Thani Prathyusha, DATE OF BIRTH: 26-03-1999, DATE OF JOINING : 26.02.2024 , Anniversary of the Employee: February 26th 
+      35. Employee ID: SARS129, EMPLOYEE NAME: M Anvesh, DATE OF BIRTH: 01-01-1963, DATE OF JOINING : 12.03.2024 , Anniversary of the Employee: March 12th 
+      36. Employee ID: SARS103, EMPLOYEE NAME: Pallepati Soujanya, DATE OF BIRTH: 12-05-1995, DATE OF JOINING : 18.03.2024 , Anniversary of the Employee: March 18th 
+      37. Employee ID: H2H028, EMPLOYEE NAME: Pabba Sairaj, DATE OF BIRTH: 14-12-2000, DATE OF JOINING : 15.04.2024 , Anniversary of the Employee: April 15th 
+      38. Employee ID: SARS105, EMPLOYEE NAME: Katukuri Manish, DATE OF BIRTH: 26-10-2000, DATE OF JOINING : 03.05.2024 , Anniversary of the Employee: May 3rd 
+      39. Employee ID: SARS104, EMPLOYEE NAME: Meesaraganda Sanath kumar Raju, DATE OF BIRTH: 17-02-1999, DATE OF JOINING : 03.05.2024 , Anniversary of the Employee: May 3rd 
+      40. Employee ID: SARS107, EMPLOYEE NAME: Kalety Sandeep kumar, DATE OF BIRTH: 01-11-1987, DATE OF JOINING : 20.05.2024 , Anniversary of the Employee: May 20th 
+      41. Employee ID: SARS112, EMPLOYEE NAME: SK Sameena, DATE OF BIRTH: 23-06-1988, DATE OF JOINING : 06.06.2024, Anniversary of the Employee: June 6th  
+      42. Employee ID: H2H030, EMPLOYEE NAME: Adigoppula Rajkumarr, DATE OF BIRTH: 25-05-1988, DATE OF JOINING : 24.06.2024 , Anniversary of the Employee: June 24th  
+      43. Employee ID: SARS114, EMPLOYEE NAME: Punnuloori Manogna, DATE OF BIRTH: 13-09-2004, DATE OF JOINING : 01.07.2024 , Anniversary of the Employee: July 1st
+      44. Employee ID: H2H032, EMPLOYEE NAME: Ilaveni Vaishnavi, DATE OF BIRTH: 05-08-2001, DATE OF JOINING : 10.07.2024  , Anniversary of the Employee: July 10th
+      45. Employee ID: SARS115, EMPLOYEE NAME: K Vinay kumar, DATE OF BIRTH: 07-08-1996, DATE OF JOINING : 01.08.2024  , Anniversary of the Employee: August 1st
+      46. Employee ID: H2H034, EMPLOYEE NAME: Nazma, DATE OF BIRTH: 15-12-2003, DATE OF JOINING : 12.08.2024  , Anniversary of the Employee: August 12th
+      47. Employee ID: H2H033, EMPLOYEE NAME: Bandari Saikumar, DATE OF BIRTH: 17-04-2000, DATE OF JOINING : 12.08.2024  , Anniversary of the Employee: August 12th
+      48. Employee ID: H2H032, EMPLOYEE NAME: Sammeta Shiva kumar, DATE OF BIRTH: 19-08-1991, DATE OF JOINING : 03.09.2024  , Anniversary of the Employee: September 3rd
+      49. Employee ID: SARS119, EMPLOYEE NAME: Ippa Anjaneya prasad, DATE OF BIRTH: 18-03-2007, DATE OF JOINING : 09.10.2024  , Anniversary of the Employee: October 9th
+      50. Employee ID: SARS118, EMPLOYEE NAME: Illa Manikanta, DATE OF BIRTH: 01-04-2000, DATE OF JOINING : 18.11.2024 , Anniversary of the Employee: November 18th 
+      51. Employee ID: SARS120, EMPLOYEE NAME: Peguda Rajini, DATE OF BIRTH: 02-10-1988, DATE OF JOINING : 02.12.2024 , Anniversary of the Employee: December 2nd 
+      52. Employee ID: SARS122, EMPLOYEE NAME: Patnam Prashanth, DATE OF BIRTH: 14-08-2002, DATE OF JOINING : 11.02.2025  , Anniversary of the Employee: February 11th
+      53. Employee ID: SARS121, EMPLOYEE NAME: Raparthi Ajay, DATE OF BIRTH: 25-06-1998, DATE OF JOINING : 17.02.2025 , Anniversary of the Employee: February 17th 
+      54. Employee ID: SARS126, EMPLOYEE NAME: Manthena Shiva, DATE OF BIRTH: 04-06-1995, DATE OF JOINING : 10.03.2025  , Anniversary of the Employee: March 10th
+      55. Employee ID: SARS124, EMPLOYEE NAME: Gaddam Prathyusha, DATE OF BIRTH: 15-03-2004, DATE OF JOINING : 10.03.2025  , Anniversary of the Employee: March 10th
+      56. Employee ID: SARS128, EMPLOYEE NAME: Katukuri Ramesh, DATE OF BIRTH: 01-01-1963, DATE OF JOINING : 10-03-2025 , Anniversary of the Employee: March 10th
+      57. Employee ID: SARS127, EMPLOYEE NAME: Janjirala Anudeep, DATE OF BIRTH: 14-08-1993, DATE OF JOINING : 12-03-2025 , Anniversary of the Employee: March 12th
+      58. Employee ID: SARS080, EMPLOYEE NAME: Naspoori Padma, DATE OF BIRTH: 11-10-1996, DATE OF JOINING : 01-06-2022 , Anniversary of the Employee: June 1st
+      59. Employee ID: SARS0078, EMPLOYEE NAME: Sagarla Saikiran, DATE OF BIRTH: 22-01-1998, DATE OF JOINING : 01-06-2022 , Anniversary of the Employee: June 1st
+      60. Employee ID: SARS116, EMPLOYEE NAME: M Bhagya Sri, DATE OF BIRTH: 23-10-2002, DATE OF JOINING : 01-08-2024 , Anniversary of the Employee: August 1st
+      61. Employee ID: SARS117, EMPLOYEE NAME: K Sathwika, DATE OF BIRTH: 27-10-2004, DATE OF JOINING : 01-08-2024 , Anniversary of the Employee: August 1st
+      62. Employee ID: SARS120, EMPLOYEE NAME: Vijaya, DATE OF BIRTH: No, DATE OF JOINING : 19-04-2025 , Anniversary of the Employee: April 19th
+      63. Employee ID: SARS125, EMPLOYEE NAME: Borigama Sai, DATE OF BIRTH: 21-11-2002, DATE OF JOINING : 10-03-2025 , Anniversary of the Employee: March 10th
+      64. Employee ID: SARS102, EMPLOYEE NAME: Nathagiri Mamatha, DATE OF BIRTH: 05-01-1990, DATE OF JOINING : 18-03-2024 , Anniversary of the Employee: March 18th
+      65. Employee ID: SARS109, EMPLOYEE NAME: Vengala Anusha, DATE OF BIRTH: 20-05-2023, DATE OF JOINING : 20-05-2025 , Anniversary of the Employee: May 20th
+      66. Employee ID: SARS110, EMPLOYEE NAME: MD Asharf, DATE OF BIRTH: 19-10-1999, DATE OF JOINING : 20-05-2024 , Anniversary of the Employee: May 20th
+      67. Employee ID: SARS108, EMPLOYEE NAME: Akudari Ramya, DATE OF BIRTH: 26-12-2001, DATE OF JOINING : 20-05-2024 , Anniversary of the Employee: May 20th
+      68. Employee ID: SARS100, EMPLOYEE NAME: Dara Roshini, DATE OF BIRTH: 16-11-2002, DATE OF JOINING  : 26-02-2024 , Anniversary of the Employee: February 26th
+      69. Employee ID: SARS111, EMPLOYEE NAME: Katkojwala Sahithya, DATE OF BIRTH: 01-09-1997, DATE OF JOINING : 03-06-2024 , Anniversary of the Employee: June 3rd
+      70. Employee ID: SARS094, EMPLOYEE NAME: Puloori Ramu, DATE OF BIRTH: 10-07-1989, DATE OF JOINING : 07-09-2023 , Anniversary of the Employee: September 7th
 
  
 
