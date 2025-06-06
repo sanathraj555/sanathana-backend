@@ -1,141 +1,209 @@
+import os
 import logging
+import time
+from datetime import datetime
+import calendar
+from openai import OpenAI
 from flask import Blueprint, request, jsonify, current_app
+from kb_content import knowledge_text
 
-# ✅ Initialize Chatbot Blueprint
+# === Configure DeepSeek ===
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1"
+MODEL_NAME = "deepseek-chat"
+
+# Initialize OpenAI client
+client = OpenAI(
+    api_key=DEEPSEEK_API_KEY,
+    base_url=DEEPSEEK_BASE_URL,
+    timeout=200
+)
+
+
+# === Flask Setup ===
 chatbot_bp = Blueprint("chatbot", __name__, url_prefix="/chatbot")
-
-# ✅ Logging configuration
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# Simple cache
+RESPONSE_CACHE = {
+    "who are the founders of sanathana?": "Founders: Sri Ranganatha Raju, Srinatha Raju, Sainatha Raju",
+    "when was sanathana founded?": "Founded in 2017",
+    "what is sanathana?": "Sanathana Analytics is a rural tech company providing recruitment, research, and e-commerce services."
+}
 
-# ✅ Helper function to handle MongoDB connection and error handling
+
+
+# === Ask DeepSeek with caching and Excel fallback ===
+def ask_deepseek(user_question):
+    try:
+        user_question = user_question.strip()
+        lower_question = user_question.lower()
+
+        # 1. Check cache
+        if lower_question in RESPONSE_CACHE:
+            return RESPONSE_CACHE[lower_question]
+
+        
+       # 2. System prompt with knowledge base
+        system_content = (
+            "You are a concise Sanathana assistant. Prioritize brevity but adapt response length to the query.\n"
+            "Rules:\n"
+            "1. Use ONLY this knowledge: \n\n" + knowledge_text + "\n\n"
+            "2. If answer isn't here, say 'I don't have that information'\n"
+            "3. Be direct - no intros/outros\n"
+            "4. Present key facts in minimal words\n"
+            "5. Use simple language\n"
+            "6. For list-based queries (e.g. birthdays):\n"
+            "   - Use bullet points\n"
+            "   - Omit full sentences\n"
+            "   - Group similar items\n"
+            "   - No line breaks between items\n"
+            )
+
+        # 3. Ask DeepSeek
+        start_time = time.time()
+        response = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[
+                {"role": "system", "content": system_content},
+                {"role": "user", "content": user_question}
+            ],
+            temperature=1.0,
+            max_tokens=400,
+            stream=False
+        )
+        response_time = time.time() - start_time
+        logging.info(f"DeepSeek response time: {response_time:.2f}s")
+
+        reply = response.choices[0].message.content.strip()
+        sentences = reply.split('. ')
+        if len(sentences) > 2:
+            reply = '. '.join(sentences[:2]) + '.'
+
+        RESPONSE_CACHE[lower_question] = reply
+        return reply
+
+    except Exception as e:
+        logging.error(f"DeepSeek Error: {str(e)}")
+
+        # Fallback logic
+        if "founder" in lower_question:
+            return "Founders: Sri Ranganatha Raju, Srinatha Raju, Sainatha Raju"
+        elif "founded" in lower_question or "when" in lower_question:
+            return "Founded in 2017"
+        elif "what" in lower_question and "sanathana" in lower_question:
+            return "Sanathana Analytics is a rural tech company providing recruitment and tech services."
+
+        return "I'm having trouble answering right now. Please try again."
+
+# === MongoDB Access ===
 def get_mongo_chatbot():
-    mongo_chatbot = current_app.mongo_chatbot
-    if mongo_chatbot is None:
+    db = current_app.mongo_chatbot
+    if db is None:
         logging.error("❌ Database connection issue")
-        raise Exception("Database connection issue")
-    
-    logging.info("✅ MongoDB connection accessed: %s", mongo_chatbot)
-    return mongo_chatbot
+        raise RuntimeError("Database connection issue")
+    return db
 
+# === Flatten Mongo Questions ===
+def flatten_questions(sections):
+    flat = []
+    for sec in sections:
+        name = sec.get("section_name", "Unknown")
+        for q in sec.get("questions", []):
+            flat.append({"question": q["question"], "answer": q["answer"], "section": name})
+        def _subs(subs):
+            for s in subs:
+                subn = s.get("sub_section_name", "")
+                for q in s.get("questions", []):
+                    flat.append({
+                        "question": q["question"],
+                        "answer": q["answer"],
+                        "section": name,
+                        "sub_section": subn
+                    })
+                if s.get("sub_sections"):
+                    _subs(s["sub_sections"])
+        if sec.get("sub_sections"):
+            _subs(sec["sub_sections"])
+    return flat
 
-# ✅ Fetch Main Sections (Displayed inside chatbot messages)
+# === /sections endpoint ===
 @chatbot_bp.route("/sections", methods=["GET"])
 def get_sections():
-    """Fetch all main sections available in the chatbot."""
     try:
-        mongo_chatbot = get_mongo_chatbot()
-        sections_collection = mongo_chatbot["sections"]
-        sections = sections_collection.find({}, {"_id": 0, "section_name": 1})
-        sections_list = [s["section_name"] for s in sections]
-        
-        logging.info("✅ Sections fetched: %s", sections_list)
-
-        return jsonify({"sections": sections_list}), 200
+        coll = get_mongo_chatbot()["sections"]
+        docs = coll.find({}, {"_id": 0, "section_name": 1})
+        lst = [d["section_name"] for d in docs]
+        logging.info("✅ Sections fetched: %s", lst)
+        return jsonify({"sections": lst}), 200
     except Exception as e:
-        logging.error(f"❌ Error fetching sections: {str(e)}")
+        logging.error("❌ Error fetching sections: %s", e)
         return jsonify({"error": "Failed to fetch sections"}), 500
 
-
-# ✅ Fetch sub-sections or questions for a selected section
+# === /section-questions endpoint ===
 @chatbot_bp.route("/section-questions", methods=["GET"])
 def get_section_questions():
-    section_name = request.args.get("section", "").strip()
-    if not section_name:
+    name = request.args.get("section", "").strip()
+    if not name:
         return jsonify({"error": "Section name is required"}), 400
-
     try:
-        mongo_chatbot = get_mongo_chatbot()
-        sections_collection = mongo_chatbot["sections"]
+        coll = get_mongo_chatbot()["sections"]
+        sec = coll.find_one({"section_name": name})
+        if sec:
+            if sec.get("sub_sections"):
+                return jsonify({"sub_sections": [s["sub_section_name"] for s in sec["sub_sections"]]}), 200
+            return jsonify({"questions": sec.get("questions", [])}), 200
 
-        section = sections_collection.find_one({"section_name": section_name})
-
-        if section:
-            if "sub_sections" in section and section["sub_sections"]:
-                return jsonify({"sub_sections": [s["sub_section_name"] for s in section["sub_sections"]]}), 200
-            return jsonify({"questions": section.get("questions", [])}), 200
-
-        parent_section = sections_collection.find_one({"sub_sections.sub_section_name": section_name})
-        if parent_section:
-            for sub in parent_section["sub_sections"]:
-                if sub["sub_section_name"] == section_name:
+        parent = coll.find_one({"sub_sections.sub_section_name": name})
+        if parent:
+            for s in parent["sub_sections"]:
+                if s["sub_section_name"] == name:
                     return jsonify({
-                        "sub_sections": [s["sub_section_name"] for s in sub.get("sub_sections", [])],
-                        "questions": sub.get("questions", [])
+                        "sub_sections": [ss["sub_section_name"] for ss in s.get("sub_sections", [])],
+                        "questions": s.get("questions", [])
                     }), 200
 
-        def find_sub_section(sub_sections, name):
-            for sub in sub_sections:
-                if sub["sub_section_name"] == name:
-                    return sub
-                if "sub_sections" in sub:
-                    found = find_sub_section(sub["sub_sections"], name)
+        def find_sub(subs):
+            for s in subs:
+                if s["sub_section_name"] == name:
+                    return s
+                if s.get("sub_sections"):
+                    found = find_sub(s["sub_sections"])
                     if found:
                         return found
             return None
 
-        top_level_sections = sections_collection.find({}, {"_id": 0, "sub_sections": 1})
-        for section in top_level_sections:
-            if "sub_sections" in section:
-                found_sub_section = find_sub_section(section["sub_sections"], section_name)
-                if found_sub_section:
+        for doc in coll.find({}, {"_id": 0, "sub_sections": 1}):
+            if doc.get("sub_sections"):
+                f = find_sub(doc["sub_sections"])
+                if f:
                     return jsonify({
-                        "sub_sections": [s["sub_section_name"] for s in found_sub_section.get("sub_sections", [])],
-                        "questions": found_sub_section.get("questions", [])
+                        "sub_sections": [ss["sub_section_name"] for ss in f.get("sub_sections", [])],
+                        "questions": f.get("questions", [])
                     }), 200
 
         return jsonify({"error": "Section not found"}), 404
-
     except Exception as e:
-        logging.error(f"❌ Error fetching section questions: {str(e)}")
+        logging.error("❌ get_section_questions: %s", e)
         return jsonify({"error": "Failed to fetch questions"}), 500
 
-
-# ✅ Fetch Response for a Specific Question
+# === /chat-response endpoint ===
 @chatbot_bp.route("/chat-response", methods=["POST"])
 def chatbot_reply():
-    data = request.json
-    if not data or "message" not in data or "section" not in data:
-        return jsonify({"error": "Invalid request. 'message' and 'section' are required."}), 400
-
-    user_input = data["message"].strip()
-    selected_section = data["section"].strip()
-
     try:
-        mongo_chatbot = get_mongo_chatbot()
-        sections_collection = mongo_chatbot["sections"]
+        data = request.get_json()
+        user_input = data.get("message", "").strip()
 
-        section = sections_collection.find_one({"section_name": selected_section})
-        if section and "questions" in section:
-            for q in section["questions"]:
-                if q["question"].strip().lower() == user_input.lower():
-                    return jsonify({"response": q["answer"]}), 200
+        if not user_input or len(user_input) > 500:
+            return jsonify({"error": "Invalid input"}), 400
 
-        if section and "sub_sections" in section:
-            for sub in section["sub_sections"]:
-                if sub["sub_section_name"] == selected_section or selected_section == sub["sub_section_name"]:
-                    for q in sub.get("questions", []):
-                        if q["question"].strip().lower() == user_input.lower():
-                            return jsonify({"response": q["answer"]}), 200
+        start_time = time.time()
+        reply = ask_deepseek(user_input)
+        response_time = time.time() - start_time
 
-        def search_nested_sub_sections(sub_sections):
-            for sub in sub_sections:
-                if sub["sub_section_name"] == selected_section:
-                    for q in sub.get("questions", []):
-                        if q["question"].strip().lower() == user_input.lower():
-                            return jsonify({"response": q["answer"]}), 200
-                if "sub_sections" in sub:
-                    result = search_nested_sub_sections(sub["sub_sections"])
-                    if result:
-                        return result
-            return None
-
-        result = search_nested_sub_sections(section.get("sub_sections", []))
-        if result:
-            return result
-
-        return jsonify({"response": "Sorry, I don't have an answer for that."}), 200
+        logging.info(f"Total response time: {response_time:.2f}s | Chars: {len(reply)}")
+        return jsonify({"response": reply}), 200
 
     except Exception as e:
-        logging.error(f"❌ Error fetching response: {str(e)}")
-        return jsonify({"error": "Failed to fetch response"}), 500
+        logging.error(f"Endpoint Error: {str(e)}")
+        return jsonify({"response": "Internal server error"}), 500

@@ -10,12 +10,17 @@ logging.basicConfig(level=logging.INFO)
 # 🔁 Helper: fetch one row from DB
 def fetch_one(query, params):
     conn = get_db_connection()
+    if not conn:
+        logging.error("❌ Could not establish database connection.")
+        raise Exception("Database connection failed.")
+
     cursor = conn.cursor(dictionary=True)
     cursor.execute(query, params)
     result = cursor.fetchone()
     cursor.close()
     conn.close()
     return result
+
 
 # ✅ Signup
 @auth_bp.route("/signup", methods=["POST"])

@@ -6,3 +6,6 @@ mysql-connector-python
 bcrypt
 python-dotenv
 gunicorn
+openpyxl
+pandas
+openai
