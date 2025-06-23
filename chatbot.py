@@ -1,8 +1,6 @@
 import os
 import logging
 import time
-from datetime import datetime
-import calendar
 from openai import OpenAI
 from flask import Blueprint, request, jsonify, current_app
 from kb_content import knowledge_text
@@ -44,21 +42,25 @@ def ask_deepseek(user_question):
             return RESPONSE_CACHE[lower_question]
 
         
-       # 2. System prompt with knowledge base
+      # 2. System prompt with knowledge base
         system_content = (
-            "You are a concise Sanathana assistant. Prioritize brevity but adapt response length to the query.\n"
+            "You are a concise Sanathana assistant. Answer using only the knowledge provided, but form sentences if helpful.\n\n"
+            "Knowledge Base:\n"
+            + knowledge_text +
+            "\n\n"
             "Rules:\n"
-            "1. Use ONLY this knowledge: \n\n" + knowledge_text + "\n\n"
-            "2. If answer isn't here, say 'I don't have that information'\n"
-            "3. Be direct - no intros/outros\n"
-            "4. Present key facts in minimal words\n"
-            "5. Use simple language\n"
-            "6. For list-based queries (e.g. birthdays):\n"
+            "1. Use ONLY this knowledge\n"
+            "2. If the answer is not found, reply: 'I don't have that information'\n"
+            "3. Be direct — no greetings or sign-offs\n"
+            "4. Prefer short, crisp sentences\n"
+            "5. Use clear, simple language\n"
+            "6. For bullet-friendly queries (like 'list features' or 'show benefits'):\n"
             "   - Use bullet points\n"
-            "   - Omit full sentences\n"
-            "   - Group similar items\n"
-            "   - No line breaks between items\n"
-            )
+            "   - Group related items\n"
+            "   - No blank lines between bullets\n"
+            "7. For all other queries, respond in brief sentences using the relevant facts\n"
+            "8. Include contact details only if specifically requested\n"
+        )
 
         # 3. Ask DeepSeek
         start_time = time.time()
