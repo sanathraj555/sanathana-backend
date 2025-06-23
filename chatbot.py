@@ -14,7 +14,7 @@ MODEL_NAME = "deepseek-chat"
 client = OpenAI(
     api_key=DEEPSEEK_API_KEY,
     base_url=DEEPSEEK_BASE_URL,
-    timeout=200
+    timeout=250
 )
 
 
@@ -70,8 +70,8 @@ def ask_deepseek(user_question):
                 {"role": "system", "content": system_content},
                 {"role": "user", "content": user_question}
             ],
-            temperature=1.0,
-            max_tokens=400,
+            temperature=0.1,
+            max_tokens=1000,
             stream=False
         )
         response_time = time.time() - start_time
