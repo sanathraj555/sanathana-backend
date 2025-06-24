@@ -70,7 +70,7 @@ def ask_deepseek(user_question):
                 {"role": "system", "content": system_content},
                 {"role": "user", "content": user_question}
             ],
-            temperature=0.1,
+            temperature=1.0,
             max_tokens=1000,
             stream=False
         )
