@@ -1,9 +1,15 @@
 import os
 import logging
 import time
+import re
+from datetime import datetime
 from openai import OpenAI
 from flask import Blueprint, request, jsonify, current_app
-from kb_content import knowledge_text
+
+# === Load knowledge base from txt file ===
+KB_PATH = os.path.join(os.path.dirname(__file__), "kb_content.txt")
+with open(KB_PATH, "r", encoding="utf-8") as f:
+    knowledge_text = f.read()
 
 # === Configure DeepSeek ===
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
@@ -17,7 +23,6 @@ client = OpenAI(
     timeout=250
 )
 
-
 # === Flask Setup ===
 chatbot_bp = Blueprint("chatbot", __name__, url_prefix="/chatbot")
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -29,7 +34,25 @@ RESPONSE_CACHE = {
     "what is sanathana?": "Sanathana Analytics is a rural tech company providing recruitment, research, and e-commerce services."
 }
 
-
+# === Structured extraction for birthdays ===
+def extract_birthdays_by_month(month_name):
+    # Regex to extract lines with DOB and Name (adjust pattern to your kb_content.txt format)
+    pattern = re.compile(
+        r'EMPLOYEE NAME\s*:\s*([^,\n]+).*?DATE OF BIRTH\s*:\s*([0-9\-]+)', re.IGNORECASE | re.DOTALL)
+    matches = pattern.findall(knowledge_text)
+    try:
+        month_num = datetime.strptime(month_name, "%B").month
+    except Exception:
+        return []
+    results = []
+    for name, dob in matches:
+        try:
+            dob_dt = datetime.strptime(dob, "%d-%m-%Y")
+            if dob_dt.month == month_num:
+                results.append(f"{name.strip()} - {dob_dt.strftime('%d-%b')}")
+        except Exception:
+            continue
+    return results
 
 # === Ask DeepSeek with caching and Excel fallback ===
 def ask_deepseek(user_question):
@@ -41,8 +64,23 @@ def ask_deepseek(user_question):
         if lower_question in RESPONSE_CACHE:
             return RESPONSE_CACHE[lower_question]
 
-        
-      # 2. System prompt with knowledge base
+        # 1a. Handle birthday queries directly
+        if "birthday" in lower_question or "birthdays" in lower_question:
+            months = [
+                "january", "february", "march", "april", "may", "june",
+                "july", "august", "september", "october", "november", "december"
+            ]
+            for m in months:
+                if m in lower_question:
+                    bdays = extract_birthdays_by_month(m.capitalize())
+                    if bdays:
+                        reply = f"Birthdays in {m.capitalize()}:\n- " + "\n- ".join(bdays)
+                    else:
+                        reply = f"No birthdays found in {m.capitalize()}."
+                    RESPONSE_CACHE[lower_question] = reply
+                    return reply
+
+        # 2. System prompt with knowledge base
         system_content = (
             "You are a concise Sanathana assistant. Answer using only the knowledge provided, but form sentences if helpful.\n\n"
             "Knowledge Base:\n"
@@ -97,6 +135,8 @@ def ask_deepseek(user_question):
             return "Sanathana Analytics is a rural tech company providing recruitment and tech services."
 
         return "I'm having trouble answering right now. Please try again."
+
+# ...rest of your code remains unchanged...
 
 # === MongoDB Access ===
 def get_mongo_chatbot():
