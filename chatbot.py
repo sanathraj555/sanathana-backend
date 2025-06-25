@@ -5,6 +5,9 @@ import re
 from datetime import datetime
 from openai import OpenAI
 from flask import Blueprint, request, jsonify, current_app
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+
 
 # === Load knowledge base from txt file ===
 KB_PATH = os.path.join(os.path.dirname(__file__), "kb_content.txt")
@@ -15,13 +18,16 @@ with open(KB_PATH, "r", encoding="utf-8") as f:
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1"
 MODEL_NAME = "deepseek-chat"
+client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_BASE_URL)
 
-# Initialize OpenAI client
-client = OpenAI(
-    api_key=DEEPSEEK_API_KEY,
-    base_url=DEEPSEEK_BASE_URL,
-    timeout=250
-)
+# === Google Sheets Config ===
+GOOGLE_CREDS_PATH = os.path.join(os.path.dirname(__file__), "google-credentials.json")
+LEAVE_SPREADSHEET_ID = os.getenv("LEAVE_SPREADSHEET_ID")  # set in .env
+
+# === Setup Google Sheets client ===
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_CREDS_PATH, scope)
+client_gsheet = gspread.authorize(creds)
 
 # === Flask Setup ===
 chatbot_bp = Blueprint("chatbot", __name__, url_prefix="/chatbot")
@@ -36,7 +42,6 @@ RESPONSE_CACHE = {
 
 # === Structured extraction for birthdays ===
 def extract_birthdays_by_month(month_name):
-    # Regex to extract lines with DOB and Name (adjust pattern to your kb_content.txt format)
     pattern = re.compile(
         r'EMPLOYEE NAME\s*:\s*([^,\n]+).*?DATE OF BIRTH\s*:\s*([0-9\-]+)', re.IGNORECASE | re.DOTALL)
     matches = pattern.findall(knowledge_text)
@@ -54,17 +59,41 @@ def extract_birthdays_by_month(month_name):
             continue
     return results
 
-# === Ask DeepSeek with caching and Excel fallback ===
-def ask_deepseek(user_question):
+# === Get leave data for EMP ID ===
+def get_leave_data(emp_id):
+    try:
+        sheet = client_gsheet.open_by_key(LEAVE_SPREADSHEET_ID).worksheet("June 2025")
+        records = sheet.get_all_records()
+        user_leaves = [row for row in records if row.get("EMP ID") == emp_id]
+
+        if not user_leaves:
+            return f"No leave data found for EMP ID {emp_id}."
+
+        row = user_leaves[0]
+        leave_summary = f"Leave Summary for EMP ID {emp_id} (June 2025):\n"
+        leave_summary += f"- Casual Leave Taken: {row.get('Casual Leave', '0')}\n"
+        leave_summary += f"- Sick Leave Taken: {row.get('Sick Leave', '0')}\n"
+        leave_summary += f"- Earned Leave Taken: {row.get('Earned Leave', '0')}\n"
+        leave_summary += f"- Total Leaves Taken: {row.get('Total Used', '0')}\n"
+        leave_summary += f"- Leaves Remaining: {row.get('Leaves Left', '0')}"
+        return leave_summary
+
+    except Exception as e:
+        logging.error(f"Google Sheets Error: {e}")
+        return "Error fetching leave data. Please try again later."
+
+# === Ask DeepSeek with leave integration ===
+def ask_deepseek(user_question, emp_id=None):
     try:
         user_question = user_question.strip()
         lower_question = user_question.lower()
 
-        # 1. Check cache
         if lower_question in RESPONSE_CACHE:
             return RESPONSE_CACHE[lower_question]
 
-        # 1a. Handle birthday queries directly
+        if emp_id and ("leave" in lower_question or "leaves" in lower_question):
+            return get_leave_data(emp_id)
+
         if "birthday" in lower_question or "birthdays" in lower_question:
             months = [
                 "january", "february", "march", "april", "may", "june",
@@ -80,7 +109,6 @@ def ask_deepseek(user_question):
                     RESPONSE_CACHE[lower_question] = reply
                     return reply
 
-        # 2. System prompt with knowledge base
         system_content = (
             "You are a concise Sanathana assistant. Answer using only the knowledge provided, but form sentences if helpful.\n\n"
             "Knowledge Base:\n"
@@ -100,7 +128,6 @@ def ask_deepseek(user_question):
             "8. Include contact details only if specifically requested\n"
         )
 
-        # 3. Ask DeepSeek
         start_time = time.time()
         response = client.chat.completions.create(
             model=MODEL_NAME,
@@ -126,7 +153,6 @@ def ask_deepseek(user_question):
     except Exception as e:
         logging.error(f"DeepSeek Error: {str(e)}")
 
-        # Fallback logic
         if "founder" in lower_question:
             return "Founders: Sri Ranganatha Raju, Srinatha Raju, Sainatha Raju"
         elif "founded" in lower_question or "when" in lower_question:
