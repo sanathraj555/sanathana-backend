@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 from openai import OpenAI
 from flask import Blueprint, request, jsonify, current_app
-import gspread
+import gspread, os, json, base64
 from oauth2client.service_account import ServiceAccountCredentials
 
 
@@ -21,14 +21,14 @@ MODEL_NAME = "deepseek-chat"
 client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_BASE_URL)
 
 # === Google Sheets Config ===
-GOOGLE_CREDS_PATH = os.path.join(os.path.dirname(__file__), "google-credentials.json")
-LEAVE_SPREADSHEET_ID = os.getenv("LEAVE_SPREADSHEET_ID")  # set in .env
+LEAVE_SPREADSHEET_ID = os.getenv("LEAVE_SPREADSHEET_ID")
 
-# === Setup Google Sheets client ===
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_CREDS_PATH, scope)
-client_gsheet = gspread.authorize(creds)
 
+creds_data = base64.b64decode(os.getenv("GOOGLE_CREDS_BASE64"))
+creds_dict = json.loads(creds_data)
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+client_gsheet = gspread.authorize(creds)
 # === Flask Setup ===
 chatbot_bp = Blueprint("chatbot", __name__, url_prefix="/chatbot")
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
