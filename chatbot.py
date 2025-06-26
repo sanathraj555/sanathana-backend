@@ -2,10 +2,11 @@ import os
 import logging
 import time
 import re
+import json
 from datetime import datetime
 from openai import OpenAI
 from flask import Blueprint, request, jsonify, current_app
-import gspread, os, json, base64
+import gspread,base64
 from oauth2client.service_account import ServiceAccountCredentials
 
 
@@ -23,7 +24,13 @@ client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_BASE_URL)
 # === Google Sheets Config ===
 LEAVE_SPREADSHEET_ID = os.getenv("LEAVE_SPREADSHEET_ID")
 
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+scope = [
+            'https://spreadsheets.google.com/feeds',
+            'https://www.googleapis.com/auth/spreadsheets',
+            'https://www.googleapis.com/auth/drive.file',
+            'https://www.googleapis.com/auth/drive'
+        ]
+
 
 creds_data = base64.b64decode(os.getenv("GOOGLE_CREDS_BASE64"))
 creds_dict = json.loads(creds_data)

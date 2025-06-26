@@ -9,3 +9,5 @@ gunicorn
 openpyxl
 pandas
 openai
+gspread
+oauth2client
