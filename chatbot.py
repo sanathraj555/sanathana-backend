@@ -268,12 +268,13 @@ def chatbot_reply():
     try:
         data = request.get_json()
         user_input = data.get("message", "").strip()
+        emp_id = data.get("emp_id")  # <-- Get emp_id from request
 
         if not user_input or len(user_input) > 500:
             return jsonify({"error": "Invalid input"}), 400
 
         start_time = time.time()
-        reply = ask_deepseek(user_input)
+        reply = ask_deepseek(user_input, emp_id)  # <-- Pass emp_id here!
         response_time = time.time() - start_time
 
         logging.info(f"Total response time: {response_time:.2f}s | Chars: {len(reply)}")
