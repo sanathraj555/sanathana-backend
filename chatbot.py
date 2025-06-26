@@ -47,7 +47,7 @@ RESPONSE_CACHE = {
     "what is sanathana?": "Sanathana Analytics is a rural tech company providing recruitment, research, and e-commerce services."
 }
 
-# === Structured extraction for birthdays ===
+# === Helper: Extract birthdays by month ===
 def extract_birthdays_by_month(month_name):
     pattern = re.compile(
         r'EMPLOYEE NAME\s*:\s*([^,\n]+).*?DATE OF BIRTH\s*:\s*([0-9\-]+)', re.IGNORECASE | re.DOTALL)
@@ -66,28 +66,66 @@ def extract_birthdays_by_month(month_name):
             continue
     return results
 
-# === Get leave data for EMP ID (with enhanced debug logging) ===
-def get_leave_data(emp_id):
+# === Helper: Find month-year from user question or fallback to current ===
+def detect_month_year_from_question(question):
+    """
+    Tries to extract the month (and optionally year) from the user's question.
+    Falls back to current month and year if not mentioned.
+    Returns ("June", "2025") for "my leaves in June 2025"
+    """
+    # Example patterns: "june 2025", "july 2024", "june", "my july leaves"
+    month_names = [
+        "january", "february", "march", "april", "may", "june",
+        "july", "august", "september", "october", "november", "december"
+    ]
+    q_lower = question.lower()
+    month = None
+    year = None
+
+    # Search for month+year, or just month
+    for m in month_names:
+        if m in q_lower:
+            month = m.capitalize()
+            # Look for 4-digit year after month
+            match = re.search(rf"{m}\s+(\d{{4}})", q_lower)
+            if match:
+                year = match.group(1)
+            break
+
+    if not month:
+        # Fallback: use current month
+        now = datetime.now()
+        month = now.strftime("%B")
+    if not year:
+        now = datetime.now()
+        year = now.strftime("%Y")
+    return month, year
+
+# === Get leave data for EMP ID, and dynamic sheet based on month/year ===
+def get_leave_data(emp_id, question=None):
     try:
-        logging.info(f"[LEAVE DATA] Sheet ID: {LEAVE_SPREADSHEET_ID}")
         sh = client_gsheet.open_by_key(LEAVE_SPREADSHEET_ID)
-        logging.info(f"[LEAVE DATA] Worksheets available: {[ws.title for ws in sh.worksheets()]}")
-        sheet = sh.worksheet("June 2025")
-        logging.info("[LEAVE DATA] Worksheet 'June 2025' opened successfully.")
+        # Determine month/year from question or use current
+        month, year = detect_month_year_from_question(question or "")
+        worksheet_name = f"{month} {year}"
+        logging.info(f"[LEAVE DATA] Trying worksheet: {worksheet_name}")
+        try:
+            sheet = sh.worksheet(worksheet_name)
+        except Exception:
+            return f"No leave data sheet found for {worksheet_name}."
         records = sheet.get_all_records()
-        logging.info(f"[LEAVE DATA] Fetched {len(records)} rows from sheet.")
-        user_leaves = [row for row in records if row.get("EMP ID") == emp_id]
-        logging.info(f"[LEAVE DATA] Matches for EMP ID {emp_id}: {len(user_leaves)}")
+        user_leaves = [row for row in records if str(row.get("EMP ID")).strip() == str(emp_id).strip()]
         if not user_leaves:
-            return f"No leave data found for EMP ID {emp_id}."
+            return f"No leave data found for your EMP ID ({emp_id}) in {worksheet_name}."
         row = user_leaves[0]
-        leave_summary = f"Leave Summary for EMP ID {emp_id} (June 2025):\n"
-        leave_summary += f"- Casual Leave Taken: {row.get('Casual Leave', '0')}\n"
-        leave_summary += f"- Sick Leave Taken: {row.get('Sick Leave', '0')}\n"
-        leave_summary += f"- Earned Leave Taken: {row.get('Earned Leave', '0')}\n"
-        leave_summary += f"- Total Leaves Taken: {row.get('Total Used', '0')}\n"
-        leave_summary += f"- Leaves Remaining: {row.get('Leaves Left', '0')}"
-        return leave_summary
+        emp_name = row.get("EMP NAME") or row.get("EMPLOYEE NAME") or "N/A"
+        msg = f"Attendance & Leave Details for **{emp_name}** (EMP ID: {emp_id}, {worksheet_name}):\n"
+        msg += "\n"
+        exclude = {"SL.NO", "EMP ID", "EMP NAME", "EMPLOYEE NAME"}
+        for key, value in row.items():
+            if key not in exclude and str(value).strip() != "":
+                msg += f"- {key}: {value}\n"
+        return msg.strip()
     except Exception as e:
         logging.error(f"[LEAVE DATA ERROR] {e}\n{traceback.format_exc()}")
         return "Error fetching leave data. Please try again later."
@@ -101,8 +139,9 @@ def ask_deepseek(user_question, emp_id=None):
         if lower_question in RESPONSE_CACHE:
             return RESPONSE_CACHE[lower_question]
 
-        if emp_id and ("leave" in lower_question or "leaves" in lower_question):
-            return get_leave_data(emp_id)
+        # Only show leave for the logged-in user, never others!
+        if emp_id and ("leave" in lower_question or "leaves" in lower_question or "attendance" in lower_question):
+            return get_leave_data(emp_id, user_question)
 
         if "birthday" in lower_question or "birthdays" in lower_question:
             months = [
@@ -119,6 +158,7 @@ def ask_deepseek(user_question, emp_id=None):
                     RESPONSE_CACHE[lower_question] = reply
                     return reply
 
+        # DeepSeek fallback for other queries
         system_content = (
             "You are a concise Sanathana assistant. Answer using only the knowledge provided, but form sentences if helpful.\n\n"
             "Knowledge Base:\n"
@@ -172,7 +212,8 @@ def ask_deepseek(user_question, emp_id=None):
 
         return "I'm having trouble answering right now. Please try again."
 
-# ...rest of your code remains unchanged...
+# === Add your endpoints and other code here (unchanged) ===
+
 
 # === MongoDB Access ===
 def get_mongo_chatbot():
