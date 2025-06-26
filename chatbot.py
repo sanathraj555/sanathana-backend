@@ -6,9 +6,9 @@ import json
 from datetime import datetime
 from openai import OpenAI
 from flask import Blueprint, request, jsonify, current_app
-import gspread,base64
+import gspread, base64
 from oauth2client.service_account import ServiceAccountCredentials
-
+import traceback
 
 # === Load knowledge base from txt file ===
 KB_PATH = os.path.join(os.path.dirname(__file__), "kb_content.txt")
@@ -25,17 +25,17 @@ client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_BASE_URL)
 LEAVE_SPREADSHEET_ID = os.getenv("LEAVE_SPREADSHEET_ID")
 
 scope = [
-            'https://spreadsheets.google.com/feeds',
-            'https://www.googleapis.com/auth/spreadsheets',
-            'https://www.googleapis.com/auth/drive.file',
-            'https://www.googleapis.com/auth/drive'
-        ]
-
+    'https://spreadsheets.google.com/feeds',
+    'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/drive'
+]
 
 creds_data = base64.b64decode(os.getenv("GOOGLE_CREDS_BASE64"))
 creds_dict = json.loads(creds_data)
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client_gsheet = gspread.authorize(creds)
+
 # === Flask Setup ===
 chatbot_bp = Blueprint("chatbot", __name__, url_prefix="/chatbot")
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -66,16 +66,20 @@ def extract_birthdays_by_month(month_name):
             continue
     return results
 
-# === Get leave data for EMP ID ===
+# === Get leave data for EMP ID (with enhanced debug logging) ===
 def get_leave_data(emp_id):
     try:
-        sheet = client_gsheet.open_by_key(LEAVE_SPREADSHEET_ID).worksheet("June 2025")
+        logging.info(f"[LEAVE DATA] Sheet ID: {LEAVE_SPREADSHEET_ID}")
+        sh = client_gsheet.open_by_key(LEAVE_SPREADSHEET_ID)
+        logging.info(f"[LEAVE DATA] Worksheets available: {[ws.title for ws in sh.worksheets()]}")
+        sheet = sh.worksheet("June 2025")
+        logging.info("[LEAVE DATA] Worksheet 'June 2025' opened successfully.")
         records = sheet.get_all_records()
+        logging.info(f"[LEAVE DATA] Fetched {len(records)} rows from sheet.")
         user_leaves = [row for row in records if row.get("EMP ID") == emp_id]
-
+        logging.info(f"[LEAVE DATA] Matches for EMP ID {emp_id}: {len(user_leaves)}")
         if not user_leaves:
             return f"No leave data found for EMP ID {emp_id}."
-
         row = user_leaves[0]
         leave_summary = f"Leave Summary for EMP ID {emp_id} (June 2025):\n"
         leave_summary += f"- Casual Leave Taken: {row.get('Casual Leave', '0')}\n"
@@ -84,9 +88,8 @@ def get_leave_data(emp_id):
         leave_summary += f"- Total Leaves Taken: {row.get('Total Used', '0')}\n"
         leave_summary += f"- Leaves Remaining: {row.get('Leaves Left', '0')}"
         return leave_summary
-
     except Exception as e:
-        logging.error(f"Google Sheets Error: {e}")
+        logging.error(f"[LEAVE DATA ERROR] {e}\n{traceback.format_exc()}")
         return "Error fetching leave data. Please try again later."
 
 # === Ask DeepSeek with leave integration ===
