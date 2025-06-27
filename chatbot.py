@@ -105,7 +105,6 @@ def detect_month_year_from_question(question):
 def get_leave_data(emp_id, question=None):
     try:
         sh = client_gsheet.open_by_key(LEAVE_SPREADSHEET_ID)
-        # Determine month/year from question or use current
         month, year = detect_month_year_from_question(question or "")
         worksheet_name = f"{month} {year}"
         logging.info(f"[LEAVE DATA] Trying worksheet: {worksheet_name}")
@@ -119,16 +118,47 @@ def get_leave_data(emp_id, question=None):
             return f"No leave data found for your EMP ID ({emp_id}) in {worksheet_name}."
         row = user_leaves[0]
         emp_name = row.get("EMP NAME") or row.get("EMPLOYEE NAME") or "N/A"
-        msg = f"Attendance & Leave Details for **{emp_name}** (EMP ID: {emp_id}, {worksheet_name}):\n"
-        msg += "\n"
-        exclude = {"SL.NO", "EMP ID", "EMP NAME", "EMPLOYEE NAME"}
+
+        # Prepare structured message
+        msg = f"Hello {emp_name} (EMP ID: {emp_id}),\n\n"
+        msg += f"Here is your attendance and leave summary for **{worksheet_name}**:\n\n"
+
+        # Friendly sentences for main leave/attendance fields
+        def line(k, v):
+            return f"• {k}: {v}\n" if str(v).strip() != "" else ""
+
+        msg += line("Present Days", row.get("PRESENT COUNT", "N/A"))
+        msg += line("Absent Days", row.get("ABSENT COUNT", "N/A"))
+        msg += line("Casual Leaves Taken", row.get("CASUAL LEAVE COUNT", "N/A"))
+        msg += line("Casual Leave Balance", row.get("CASUAL LEAVE BALANCE", "N/A"))
+        msg += line("Sick Leaves Taken", row.get("SICK LEAVE COUNT", "N/A"))
+        msg += line("Sick Leave Balance", row.get("SICK LEAVE BALANCE", "N/A"))
+        msg += line("Half Day Leaves", row.get("HALF DAY LEAVE COUNT", "N/A"))
+        msg += line("Holidays Count", row.get("HOLI DAYS COUNT", "N/A"))
+        msg += line("Loss of Pay Days", row.get("LOSS OF PAY COUNT", "N/A"))
+        msg += line("Half Sick Leaves", row.get("HALF SICK LEAVE COUNT", "N/A"))
+
+        # Add other non-empty fields (if any)
+        exclude = {
+            "SL.NO", "EMP ID", "EMP NAME", "EMPLOYEE NAME", 
+            "PRESENT COUNT", "ABSENT COUNT", "CASUAL LEAVE COUNT",
+            "CASUAL LEAVE BALANCE", "SICK LEAVE COUNT", "SICK LEAVE BALANCE",
+            "HALF DAY LEAVE COUNT", "HOLI DAYS COUNT", "LOSS OF PAY COUNT", "HALF SICK LEAVE COUNT"
+        }
+        extra_lines = []
         for key, value in row.items():
             if key not in exclude and str(value).strip() != "":
-                msg += f"- {key}: {value}\n"
+                extra_lines.append(f"• {key}: {value}")
+        if extra_lines:
+            msg += "\nOther Details:\n" + "\n".join(extra_lines)
+
+        msg += "\n\nIf you have questions about your leave or attendance, please reach out to HR."
+
         return msg.strip()
     except Exception as e:
         logging.error(f"[LEAVE DATA ERROR] {e}\n{traceback.format_exc()}")
         return "Error fetching leave data. Please try again later."
+
 
 # === Ask DeepSeek with leave integration ===
 def ask_deepseek(user_question, emp_id=None):
