@@ -121,7 +121,7 @@ def get_leave_data(emp_id, question=None):
 
         # Prepare structured message
         msg = f"Hello {emp_name} (EMP ID: {emp_id}),\n\n"
-        msg += f"Here is your attendance and leave summary for **{worksheet_name}**:\n\n"
+        msg += f"Here is your attendance and leave summary for {worksheet_name}:\n\n"
 
         # Friendly sentences for main leave/attendance fields
         def line(k, v):
@@ -138,21 +138,7 @@ def get_leave_data(emp_id, question=None):
         msg += line("Loss of Pay Days", row.get("LOSS OF PAY COUNT", "N/A"))
         msg += line("Half Sick Leaves", row.get("HALF SICK LEAVE COUNT", "N/A"))
 
-        # Add other non-empty fields (if any)
-        exclude = {
-            "SL.NO", "EMP ID", "EMP NAME", "EMPLOYEE NAME", 
-            "PRESENT COUNT", "ABSENT COUNT", "CASUAL LEAVE COUNT",
-            "CASUAL LEAVE BALANCE", "SICK LEAVE COUNT", "SICK LEAVE BALANCE",
-            "HALF DAY LEAVE COUNT", "HOLI DAYS COUNT", "LOSS OF PAY COUNT", "HALF SICK LEAVE COUNT"
-        }
-        extra_lines = []
-        for key, value in row.items():
-            if key not in exclude and str(value).strip() != "":
-                extra_lines.append(f"• {key}: {value}")
-        if extra_lines:
-            msg += "\nOther Details:\n" + "\n".join(extra_lines)
-
-        msg += "\n\nIf you have questions about your leave or attendance, please reach out to HR."
+        msg += "\nIf you have questions about your leave or attendance, please reach out to HR."
 
         return msg.strip()
     except Exception as e:
