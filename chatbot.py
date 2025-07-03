@@ -148,7 +148,7 @@ def get_leave_data(emp_id, question=None):
 def ask_deepseek(user_question, emp_id=None):
     import time
 
-    def call_deepseek_with_retry(messages, model=MODEL_NAME, max_tokens=600, max_retries=3):
+    def call_deepseek_with_retry(messages, model=MODEL_NAME, max_tokens=2000, max_retries=3):
         delays = [1, 2, 4]
         last_exception = None
         for attempt in range(max_retries):
