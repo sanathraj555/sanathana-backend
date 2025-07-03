@@ -145,26 +145,21 @@ def get_leave_data(emp_id, question=None):
         logging.error(f"[LEAVE DATA ERROR] {e}\n{traceback.format_exc()}")
         return "Error fetching leave data. Please try again later."
 
-
-# === Ask DeepSeek with leave integration ===
 def ask_deepseek(user_question, emp_id=None):
     import time
 
-    def call_deepseek_with_retry(messages, model=MODEL_NAME, max_tokens=700, max_retries=3, timeout=15):
-        delays = [1, 2, 4]  # exponential backoff delays (seconds)
+    def call_deepseek_with_retry(messages, model=MODEL_NAME, max_tokens=600, max_retries=3):
+        delays = [1, 2, 4]
         last_exception = None
         for attempt in range(max_retries):
             try:
                 start_time = time.time()
-                # The OpenAI python client does not directly accept a 'timeout' param.
-                # If you use 'requests' underneath or a version that supports, pass timeout=timeout
                 response = client.chat.completions.create(
                     model=model,
                     messages=messages,
                     temperature=1.0,
                     max_tokens=max_tokens,
                     stream=False
-                    # timeout=timeout,  # Uncomment if your OpenAI client supports it
                 )
                 duration = time.time() - start_time
                 if duration > 8:
@@ -176,6 +171,19 @@ def ask_deepseek(user_question, emp_id=None):
                 if attempt < len(delays):
                     time.sleep(delays[attempt])
         raise RuntimeError(f"DeepSeek API failed after {max_retries} retries. Last error: {last_exception}")
+
+    def find_birthday_by_name(name, kb_text):
+        # Robust name search (allows partial names)
+        pattern = re.compile(r"EMPLOYEE NAME\s*:\s*(.+?)\s*[\r\n,].*?DATE OF BIRTH\s*:\s*([0-9\-]+)", re.IGNORECASE | re.DOTALL)
+        matches = pattern.findall(kb_text)
+        for emp_name, dob in matches:
+            if name.lower() in emp_name.lower():
+                try:
+                    dob_dt = datetime.strptime(dob, "%d-%m-%Y")
+                    return f"{emp_name.strip()}'s birthday is {dob_dt.strftime('%d-%b-%Y')}."
+                except Exception:
+                    return f"{emp_name.strip()}'s birthday is {dob}."
+        return None
 
     try:
         user_question = user_question.strip()
@@ -189,8 +197,22 @@ def ask_deepseek(user_question, emp_id=None):
         if emp_id and ("leave" in lower_question or "leaves" in lower_question or "attendance" in lower_question):
             return get_leave_data(emp_id, user_question)
 
-        # 3. Local logic (birthdays)
-        if "birthday" in lower_question or "birthdays" in lower_question:
+        # 3. Direct name-based birthday lookup (if user asks for someone's birthday)
+        if ("birthday" in lower_question or "birth date" in lower_question):
+            # Extract possible name from the question, e.g., "What is Amruth's birthday?"
+            name_match = re.search(r"(?i)birthday of (\w+)", user_question)
+            if not name_match:
+                name_match = re.search(r"(?i)(\w+)'s birthday", user_question)
+            if not name_match:
+                # fallback: look for any word before "birthday"
+                name_match = re.search(r"(?i)what is (\w+)[’'s ]*birthday", user_question)
+            if name_match:
+                name = name_match.group(1)
+                result = find_birthday_by_name(name, knowledge_text)
+                if result:
+                    RESPONSE_CACHE[lower_question] = result
+                    return result
+            # fallback to months extraction if a month is in the question
             months = [
                 "january", "february", "march", "april", "may", "june",
                 "july", "august", "september", "october", "november", "december"
@@ -207,23 +229,29 @@ def ask_deepseek(user_question, emp_id=None):
 
         # 4. Compose DeepSeek system prompt
         system_content = (
-            "You are a concise Sanathana assistant. Answer using only the knowledge provided, but form sentences if helpful.\n\n"
+            "You are a concise and resourceful Sanathana assistant. "
+            "Always use the knowledge provided to find and present helpful answers, even if the exact information is not available. "
+            "Carefully search, analyze, and extract any facts or related content that may assist the user. "
+            "If there is no exact answer, present the most closely related information, summaries, or inferred details from the knowledge base.\n\n"
             "Knowledge Base:\n"
             + knowledge_text +
             "\n\n"
-            "Rules:\n"
-            "1. Use ONLY this knowledge\n"
-            "2. If the answer is not found, reply: 'I don't have that information'\n"
-            "3. Be direct — no greetings or sign-offs\n"
-            "4. Prefer short, crisp sentences\n"
-            "5. Use clear, simple language\n"
-            "6. For bullet-friendly queries (like 'list features' or 'show benefits'):\n"
-            "   - Use bullet points\n"
-            "   - Group related items\n"
-            "   - No blank lines between bullets\n"
-            "7. For all other queries, respond in brief sentences using the relevant facts\n"
-            "8. Include contact details only if specifically requested\n"
+            "Instructions:\n"
+            "1. Use ONLY the knowledge provided—never make up facts.\n"
+            "2. If you cannot find an exact match, provide any relevant, related, or inferred information from the knowledge base.\n"
+            "3. Never respond with phrases like 'I don't have that information' or 'I am unable to answer'.\n"
+            "4. Be direct—avoid greetings, sign-offs, or apologies.\n"
+            "5. Always keep sentences short and crisp.\n"
+            "6. Use clear, simple language that is easy to understand.\n"
+            "7. For list-type queries (such as 'list features' or 'show benefits'):\n"
+            "   - Present information as bullet points\n"
+            "   - Group related items together logically\n"
+            "   - Avoid blank lines between bullets\n"
+            "8. For all other queries, respond with brief, fact-based sentences using the most relevant knowledge.\n"
+            "9. Only include contact details if specifically requested.\n"
+            "10. Always try to give the user the most useful response possible using the available knowledge.\n"
         )
+
 
         # 5. Call DeepSeek with retry logic
         start_time = time.time()
@@ -232,7 +260,7 @@ def ask_deepseek(user_question, emp_id=None):
                 {"role": "system", "content": system_content},
                 {"role": "user", "content": user_question}
             ],
-            max_tokens=750  # Lower for faster reply, can adjust
+            max_tokens=600  # Lower for faster reply, can adjust
         )
         response_time = time.time() - start_time
         logging.info(f"DeepSeek response time: {response_time:.2f}s")
@@ -249,7 +277,6 @@ def ask_deepseek(user_question, emp_id=None):
 
     except Exception as e:
         logging.error(f"DeepSeek Error: {str(e)}")
-
         # Optional: fallback for common queries
         if "founder" in lower_question:
             return "Founders: Sri Ranganatha Raju, Srinatha Raju, Sainatha Raju"
@@ -258,6 +285,7 @@ def ask_deepseek(user_question, emp_id=None):
         elif "what" in lower_question and "sanathana" in lower_question:
             return "Sanathana Analytics is a rural tech company providing recruitment and tech services."
         return "I'm having trouble answering right now. Please try again."
+
 
 
 # === Add your endpoints and other code here (unchanged) ===
