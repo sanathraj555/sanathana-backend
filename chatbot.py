@@ -148,17 +148,48 @@ def get_leave_data(emp_id, question=None):
 
 # === Ask DeepSeek with leave integration ===
 def ask_deepseek(user_question, emp_id=None):
+    import time
+
+    def call_deepseek_with_retry(messages, model=MODEL_NAME, max_tokens=700, max_retries=3, timeout=15):
+        delays = [1, 2, 4]  # exponential backoff delays (seconds)
+        last_exception = None
+        for attempt in range(max_retries):
+            try:
+                start_time = time.time()
+                # The OpenAI python client does not directly accept a 'timeout' param.
+                # If you use 'requests' underneath or a version that supports, pass timeout=timeout
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    temperature=1.0,
+                    max_tokens=max_tokens,
+                    stream=False
+                    # timeout=timeout,  # Uncomment if your OpenAI client supports it
+                )
+                duration = time.time() - start_time
+                if duration > 8:
+                    logging.warning(f"[DeepSeek SLOW] Took {duration:.2f}s")
+                return response
+            except Exception as e:
+                last_exception = e
+                logging.warning(f"DeepSeek attempt {attempt+1} failed: {str(e)}")
+                if attempt < len(delays):
+                    time.sleep(delays[attempt])
+        raise RuntimeError(f"DeepSeek API failed after {max_retries} retries. Last error: {last_exception}")
+
     try:
         user_question = user_question.strip()
         lower_question = user_question.lower()
 
+        # 1. Fast cache for popular queries
         if lower_question in RESPONSE_CACHE:
             return RESPONSE_CACHE[lower_question]
 
-        # Only show leave for the logged-in user, never others!
+        # 2. Local logic (leave data)
         if emp_id and ("leave" in lower_question or "leaves" in lower_question or "attendance" in lower_question):
             return get_leave_data(emp_id, user_question)
 
+        # 3. Local logic (birthdays)
         if "birthday" in lower_question or "birthdays" in lower_question:
             months = [
                 "january", "february", "march", "april", "may", "june",
@@ -174,7 +205,7 @@ def ask_deepseek(user_question, emp_id=None):
                     RESPONSE_CACHE[lower_question] = reply
                     return reply
 
-        # DeepSeek fallback for other queries
+        # 4. Compose DeepSeek system prompt
         system_content = (
             "You are a concise Sanathana assistant. Answer using only the knowledge provided, but form sentences if helpful.\n\n"
             "Knowledge Base:\n"
@@ -194,39 +225,40 @@ def ask_deepseek(user_question, emp_id=None):
             "8. Include contact details only if specifically requested\n"
         )
 
+        # 5. Call DeepSeek with retry logic
         start_time = time.time()
-        response = client.chat.completions.create(
-            model=MODEL_NAME,
+        response = call_deepseek_with_retry(
             messages=[
                 {"role": "system", "content": system_content},
                 {"role": "user", "content": user_question}
             ],
-            temperature=1.0,
-            max_tokens=1000,
-            stream=False
+            max_tokens=750  # Lower for faster reply, can adjust
         )
         response_time = time.time() - start_time
         logging.info(f"DeepSeek response time: {response_time:.2f}s")
 
+        # 6. Truncate answer to keep short (first two sentences)
         reply = response.choices[0].message.content.strip()
         sentences = reply.split('. ')
         if len(sentences) > 2:
             reply = '. '.join(sentences[:2]) + '.'
 
+        # 7. Store in cache
         RESPONSE_CACHE[lower_question] = reply
         return reply
 
     except Exception as e:
         logging.error(f"DeepSeek Error: {str(e)}")
 
+        # Optional: fallback for common queries
         if "founder" in lower_question:
             return "Founders: Sri Ranganatha Raju, Srinatha Raju, Sainatha Raju"
         elif "founded" in lower_question or "when" in lower_question:
             return "Founded in 2017"
         elif "what" in lower_question and "sanathana" in lower_question:
             return "Sanathana Analytics is a rural tech company providing recruitment and tech services."
-
         return "I'm having trouble answering right now. Please try again."
+
 
 # === Add your endpoints and other code here (unchanged) ===
 
